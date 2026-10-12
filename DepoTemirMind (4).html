@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DepoTemirMind</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #0b0f16; --bg2: #0e1420; --panel: #111925; --card: #141d2a; --line: #243146; --soft: #101823;
+    --text: #f3f7fb; --muted: #9aa8bb;
+    --accent: #25a8f0; --btn: #1b92d6; --btn-d: #1479b5; --gold: #c9931f; --gold-d: #a77a14;
+    --warn: #f2b705; --signal: #ff4d5e; --ok: #2fd18a;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; background: #0b0f16; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: "Montserrat", "Segoe UI", Roboto, Arial, sans-serif; }
+  [hidden] { display: none !important; }
+  .rails { display: none; }
+  button, input, select { font-family: inherit; }
+
+  .screen { display: none; height: 100%; flex-direction: column; }
+  .screen.active { display: flex; }
+  .main .screen { height: auto; flex: 1; min-height: 0; }
+
+  /* ---------- Шапка ---------- */
+  #app { display: flex; flex-direction: column; height: 100%; }
+  .top { flex: none; height: 76px; display: flex; align-items: center; gap: 22px; padding: 0 clamp(14px, 4vw, 56px); background: #0b0f16; border-bottom: 1px solid #1b2535; position: relative; z-index: 40; }
+  .menu-btn { display: none; width: 42px; height: 42px; align-items: center; justify-content: center; background: transparent; border: none; color: #fff; cursor: pointer; }
+  .menu-btn svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; }
+  .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; white-space: nowrap; }
+  .brand svg { width: 46px; height: 46px; flex: none; }
+  .brand b { display: block; font-size: 19px; font-weight: 800; letter-spacing: .2px; color: var(--accent); line-height: 1.1; }
+  .brand small { display: block; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+  .nav { display: flex; align-items: center; gap: 4px; margin-left: 12px; flex: 1; }
+  .mi { background: none; border: none; color: #fff; font-size: 15px; font-weight: 600; padding: 10px 14px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .mi:hover { color: var(--accent); }
+  .mi.on { color: var(--accent); border-bottom-color: var(--accent); }
+  .user { text-align: right; font-size: 13px; line-height: 1.25; white-space: nowrap; }
+  .user b { display: block; font-weight: 700; }
+  .user span { color: var(--muted); font-size: 12px; }
+  .out { background: var(--gold); border: none; color: #fff; border-radius: 4px; padding: 12px 20px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .out:hover { background: var(--gold-d); }
+  .veil { display: none; }
+  .main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: radial-gradient(1200px 500px at 70% -10%, #15233a 0, transparent 60%), var(--bg); }
+
+  @media (max-width: 960px) {
+    .menu-btn { display: flex; }
+    .top { gap: 10px; height: 68px; }
+    .brand svg { width: 38px; height: 38px; }
+    .brand b { font-size: 17px; }
+    .brand small { display: none; }
+    .user { display: none; }
+    .fillm { flex: 1; }
+    .out { padding: 10px 14px; font-size: 14px; margin-left: auto; }
+    .nav { display: none; position: absolute; left: 0; right: 0; top: 100%; margin: 0; flex-direction: column; align-items: stretch; gap: 0; background: #111925; border-bottom: 1px solid var(--line); box-shadow: 0 16px 30px rgba(0,0,0,.5); }
+    .nav.open { display: flex; }
+    .mi { text-align: left; padding: 16px 22px; border-bottom: 1px solid #1b2535; font-size: 16px; }
+    .mi.on { border-bottom-color: #1b2535; background: #15202f; }
+    .veil.show { display: block; position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,.5); }
+  }
+
+  /* ---------- Главная ---------- */
+  #home.active { display: block; overflow-y: auto; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(14px, 4vw, 56px); }
+  .eyebrow { color: var(--accent); font-size: 14px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin: 34px 0 10px; }
+  .hl { font-size: clamp(28px, 5.2vw, 66px); font-weight: 800; line-height: 1.16; text-transform: uppercase; margin: 0 0 28px; letter-spacing: -.5px; }
+  .scene { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .scene svg { width: 100%; height: auto; display: block; }
+  .wh { transform-box: fill-box; transform-origin: center; transform: rotate(var(--rot, 0deg)); }
+  .sg .rl, .sg .gl { opacity: 0; transition: opacity .45s; }
+  .sg.g .gl, .sg.r .rl { opacity: 1; }
+
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 22px; margin: 38px 0 12px; }
+  .stat { display: block; min-width: 0; }
+  .stat .sh { display: flex; align-items: center; gap: 10px; }
+  .stat svg { width: 38px; height: 38px; flex: none; stroke: var(--accent); fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .stat b { font-size: clamp(28px, 3.4vw, 42px); font-weight: 800; line-height: 1; }
+  .stat span { display: block; margin-top: 10px; font-size: 13px; font-weight: 600; line-height: 1.4; color: #dbe5f1; }
+  @media (max-width: 900px) { .stats { grid-template-columns: repeat(2, 1fr); gap: 20px 14px; } }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 34px; }
+  .tab { background: transparent; border: none; color: var(--accent); padding: 12px 18px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 4px; }
+  .tab:hover { background: #12202f; }
+  .tab.on { background: var(--btn); color: #fff; }
+  .tbl { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 15px; }
+  .tbl th { text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); padding: 12px 14px; }
+  .tbl td { padding: 15px 14px; vertical-align: top; }
+  .tbl tbody tr:nth-child(odd) { background: rgba(255,255,255,.04); }
+  .tbl tr.lnk { cursor: pointer; }
+  .tbl tr.lnk:hover { background: #14263a; }
+  .more { margin: 20px 0 56px; background: var(--gold); color: #fff; border: none; padding: 14px 26px; border-radius: 4px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .more:hover { background: var(--gold-d); }
+  @media (max-width: 700px) { .tbl th:first-child, .tbl td:first-child { width: 92px; } }
+
+  /* ---------- Внутренние страницы ---------- */
+  .bar { display: flex; align-items: center; gap: 12px; padding: 24px clamp(14px, 4vw, 56px) 6px; flex: none; width: 100%; max-width: 1100px; margin: 0 auto; }
+  .back { width: 40px; height: 40px; border-radius: 50%; flex: none; background: var(--card); border: 1px solid var(--line); color: var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .back:hover { background: #182438; }
+  .back svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .title { font-size: 20px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+  .content { flex: 1; overflow-y: auto; padding: 14px clamp(14px, 4vw, 56px) 48px; width: 100%; max-width: 1100px; margin: 0 auto; }
+
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 15px 18px; margin-bottom: 10px; color: var(--text); font-size: 16px; font-weight: 600; }
+  button.row { cursor: pointer; }
+  button.row:hover { background: #182438; }
+  .row small { display: block; color: var(--muted); font-weight: 400; font-size: 14px; margin-top: 3px; line-height: 1.4; }
+  .chev { color: var(--accent); font-size: 22px; }
+  .rt { display: flex; align-items: center; gap: 10px; }
+  .badge { font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 20px; white-space: nowrap; background: rgba(255,255,255,.08); }
+  .badge::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: currentColor; }
+  .s-work { color: var(--ok); } .s-repair { color: var(--signal); } .s-reserve { color: var(--warn); }
+  .cls-1 { color: var(--ok); } .cls-2 { color: var(--warn); } .cls-3 { color: var(--muted); }
+  .dg-0 { color: var(--ok); } .dg-1 { color: var(--warn); } .dg-2 { color: var(--signal); }
+  .t-passenger { color: var(--accent); } .t-freight { color: var(--ok); } .t-shunting { color: var(--warn); }
+
+  .avatar { width: 92px; height: 92px; border-radius: 50%; margin: 6px auto 14px; background: #10243a; border: 3px solid var(--accent); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; }
+  .pname { text-align: center; font-size: 21px; font-weight: 800; }
+  .prole { text-align: center; color: var(--muted); margin: 4px 0 22px; }
+  .info { background: var(--card); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .info div { display: flex; justify-content: space-between; gap: 16px; padding: 13px 18px; border-bottom: 1px solid var(--line); }
+  .info div:last-child { border-bottom: none; }
+  .info span:first-child { color: var(--muted); }
+  .info span:last-child { font-weight: 700; text-align: right; }
+  .note { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; line-height: 1.55; }
+  .sec { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin: 6px 2px 10px; }
+  .sec:not(:first-child) { margin-top: 24px; }
+  .sec2 { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin: 14px 0 6px; }
+  .mut { color: var(--muted); }
+  .req { background: var(--soft); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 14px; margin: 0 0 14px; line-height: 1.45; font-size: 15px; }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .seg4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 14px 0 16px; }
+  .seg button, .seg4 button { background: var(--card); color: var(--accent); border: 1px solid var(--line); border-radius: 6px; padding: 12px 6px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .seg button:hover, .seg4 button:hover { background: #182438; }
+  .seg button.on, .seg4 button.on { background: var(--btn); color: #fff; border-color: var(--btn); }
+  .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .acts button { background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 13px 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .acts button:hover { background: #182438; }
+  .acts button.warnb { grid-column: 1 / -1; border-color: var(--accent); color: var(--accent); }
+
+  .tl { margin-left: 8px; padding-left: 20px; border-left: 3px solid var(--accent); }
+  .ev { position: relative; margin-bottom: 16px; }
+  .ev::before { content: ""; position: absolute; left: -30px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 3px solid var(--accent); }
+  .ev b { display: block; color: var(--accent); font-size: 15px; margin-bottom: 2px; }
+  .ev span { line-height: 1.45; }
+
+  .node { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--ok); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .nh { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; font-weight: 700; }
+  .mrow { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--muted); margin: 10px 0 5px; }
+  .mrow b { color: var(--text); }
+  .mbar { height: 6px; background: rgba(255,255,255,.1); border-radius: 3px; overflow: hidden; }
+  .mbar i { display: block; height: 100%; }
+  .sp { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 8px; align-items: center; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .sp svg { width: 100%; height: 30px; }
+  .why { margin-top: 12px; font-size: 14px; line-height: 1.5; }
+  .pl-crit { border-left-color: var(--signal) !important; }
+  .pl-warn { border-left-color: var(--warn) !important; }
+  .pl-plan { border-left-color: var(--line) !important; }
+  .hn { background: var(--card); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; }
+  .hn summary { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; font-weight: 700; cursor: pointer; list-style: none; }
+  .hn summary::-webkit-details-marker { display: none; }
+  .hbody { padding: 0 16px 16px; }
+  .hsp span { display: block; color: var(--muted); font-size: 13px; margin: 10px 0 4px; }
+  .hsp svg { width: 100%; height: 48px; }
+  .jr { border-top: 1px solid var(--line); padding: 10px 0; font-size: 14px; line-height: 1.45; }
+  .jr b { display: block; color: var(--text); }
+
+  .sw { width: 50px; height: 28px; border-radius: 14px; background: #34425a; position: relative; flex: none; transition: background .15s; }
+  .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .15s; }
+  [aria-checked="true"] .sw { background: var(--btn); }
+  [aria-checked="true"] .sw::after { transform: translateX(22px); }
+  .row.danger { border-left-color: var(--signal); color: var(--signal); cursor: pointer; }
+  .row .val { color: var(--muted); font-weight: 500; }
+  .stub-body { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+  .stub-body p { font-size: 22px; font-weight: 700; margin: 0; }
+
+  /* ---------- Приоритеты, план ремонта ---------- */
+  .pr-1 { color: var(--signal); } .pr-2 { color: var(--warn); } .pr-3 { color: var(--accent); }
+  .rs-plan { color: var(--muted); } .rs-wait { color: var(--warn); } .rs-work { color: var(--accent); } .rs-parts { color: var(--signal); } .rs-done { color: var(--ok); }
+  .pl-done { border-left-color: var(--ok) !important; }
+  .rt { flex-wrap: wrap; justify-content: flex-end; }
+  .rt.col { flex-direction: column; align-items: flex-end; gap: 6px; }
+  .nh .rt { gap: 6px; }
+  button.node { display: block; width: 100%; text-align: left; color: var(--text); font: inherit; cursor: pointer; }
+  button.node:hover { background: #182438; }
+  .pbox { margin-top: 12px; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; font-size: 14px; line-height: 1.5; }
+  .pbox .pt { font-weight: 800; margin-bottom: 6px; }
+  .pbox .pl { color: var(--muted); }
+  .cnts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 6px; }
+  @media (min-width: 961px) and (max-width: 1320px) { .mi { padding: 10px 8px; font-size: 14px; } .nav { margin-left: 4px; } .user { display: none; } }
+
+  /* ---------- Чат ---------- */
+  .chat { flex: 1; min-height: 0; display: flex; flex-direction: column; width: 100%; max-width: 860px; margin: 0 auto; }
+  .msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 16px clamp(14px, 4vw, 56px); display: flex; flex-direction: column; gap: 10px; }
+  .msgs.is-empty { justify-content: center; align-items: center; }
+  .empty { text-align: center; color: var(--muted); font-size: 18px; line-height: 1.5; max-width: 340px; }
+  .empty .ico { color: var(--accent); margin-bottom: 14px; display: flex; justify-content: center; }
+  .empty .ico svg { width: 52px; height: 52px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .bubble { max-width: 86%; padding: 12px 16px; border-radius: 14px; font-size: 16px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .bubble.me { align-self: flex-end; background: var(--btn); color: #fff; border-bottom-right-radius: 4px; }
+  .bubble.ai { align-self: flex-start; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-bottom-left-radius: 4px; }
+  .bubble.err { color: var(--signal); }
+  .composer { flex: none; display: flex; gap: 10px; align-items: flex-end; padding: 12px clamp(14px, 4vw, 56px) 20px; background: var(--bg2); border-top: 1px solid var(--line); }
+  .composer textarea { flex: 1; resize: none; max-height: 120px; min-height: 46px; background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 23px; padding: 12px 18px; font: inherit; font-size: 16px; line-height: 1.3; outline: none; }
+  .composer textarea:focus { border-color: var(--accent); }
+  .send { width: 46px; height: 46px; flex: none; border-radius: 50%; border: none; cursor: pointer; background: var(--btn); color: #fff; display: flex; align-items: center; justify-content: center; }
+  .send:disabled { opacity: .4; cursor: default; }
+  .send svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- Вход ---------- */
+  #login { align-items: center; justify-content: center; padding: 20px; background: radial-gradient(900px 480px at 50% -10%, #17283f 0, transparent 60%), #0b0f16; }
+  .lg { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.55); max-width: 430px; width: 100%; padding: 30px 26px; }
+  .lg h1 { margin: 0 0 8px; font-size: 26px; font-weight: 800; }
+  .lg p { color: var(--muted); line-height: 1.5; margin: 0 0 20px; font-size: 14px; }
+  .lg .lock { color: var(--accent); margin-bottom: 12px; }
+  .lg .lock svg { width: 46px; height: 46px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .rolebtn { display: block; width: 100%; text-align: left; background: var(--card); color: var(--text); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 15px 16px; margin-bottom: 10px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .rolebtn:hover { background: #182438; }
+  .pin { width: 100%; background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; font: inherit; font-size: 22px; letter-spacing: 8px; text-align: center; outline: none; margin: 8px 0 12px; }
+  .pin:focus { border-color: var(--accent); }
+  .pbtn { width: 100%; background: var(--btn); color: #fff; border: none; border-radius: 4px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 0 var(--btn-d); }
+  .plink { background: none; border: none; color: var(--accent); margin-top: 12px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .perr { color: var(--signal); min-height: 22px; margin-top: 10px; font-size: 14px; }
+  .fl { display: block; color: var(--muted); font-size: 13px; font-weight: 600; margin: 0 0 14px; }
+  .fl input, .fl select { display: block; width: 100%; margin-top: 6px; padding: 13px 14px; background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 16px; outline: none; }
+  .fl input:focus, .fl select:focus { border-color: var(--accent); }
+  .content .pbtn { margin: 6px 0 14px; display: block; }
+  /* ---------- День / ночь ---------- */
+  .scene { position: relative; }
+  .dnlabel { position: absolute; top: 10px; left: 12px; z-index: 2; background: rgba(11,15,22,.68); border: 1px solid var(--line); border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 700; color: #fff; }
+  .dn, .bm { transition: opacity 2.5s; }
+  .sun, .cloud { opacity: 0; } .night { opacity: 1; }
+  .scene.day .sun, .scene.day .cloud { opacity: 1; } .scene.day .night, .scene.day .bm { opacity: 0; }
+  #sky stop, #wn stop, #gs stop, #bal stop { transition: stop-color 2.5s; }
+  .scene.day #sky stop:first-child { stop-color: #3c8fdc; } .scene.day #sky stop:last-child { stop-color: #b4dcf6; }
+  .scene.day #wn stop:first-child { stop-color: #d6eefb; } .scene.day #wn stop:last-child { stop-color: #86b8d8; }
+  .scene.day #gs stop:first-child { stop-color: #356f3d; } .scene.day #gs stop:last-child { stop-color: #1f4a28; }
+  .scene.day #bal stop:first-child { stop-color: #8c9096; } .scene.day #bal stop:last-child { stop-color: #4f5459; }
+  @media (min-width: 961px) { .nav { min-width: 0; overflow-x: auto; scrollbar-width: none; } .nav::-webkit-scrollbar { display: none; } .mi { flex: none; } }
+  /* ---------- Переход между страницами ---------- */
+  .main { overflow-x: clip; }
+  @keyframes pgf { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+  @keyframes pgb { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+  @keyframes pgs { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .pg-fwd { animation: pgf .38s cubic-bezier(.22,.8,.3,1) both; }
+  .pg-back { animation: pgb .38s cubic-bezier(.22,.8,.3,1) both; }
+  .pg-swap { animation: pgs .26s ease-out both; }
+  body.no-anim .pg-fwd, body.no-anim .pg-back, body.no-anim .pg-swap { animation: none; }
+  @media (prefers-reduced-motion: reduce) { .pg-fwd, .pg-back, .pg-swap { animation: none; } }
+  body.no-anim .scene *, body.no-anim .scene { transition: none !important; }
+  @media (min-width: 961px) and (max-width: 1180px) { .mi { padding: 10px 6px; font-size: 13px; } .brand small { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="screen active" id="login">
+  <div class="lg">
+    <div class="lock"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2"/></svg></div>
+    <h1>DepoTemirMind</h1>
+    <p>Вход только для сотрудников депо: администратор, мастер депо, диагност, планировщик ремонта, слесарь-ремонтник.</p>
+    <div id="lg-roles">
+      <button class="rolebtn" data-role="admin">Администратор</button>
+      <button class="rolebtn" data-role="master">Мастер депо</button>
+      <button class="rolebtn" data-role="diag">Диагност</button>
+      <button class="rolebtn" data-role="plan">Планировщик ремонта</button>
+      <button class="rolebtn" data-role="mech">Слесарь-ремонтник</button>
+    </div>
+    <div id="lg-pin" hidden>
+      <div class="mut" id="lg-role" style="font-size:18px;font-weight:600;color:var(--text)"></div>
+      <input class="pin" id="lg-input" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••">
+      <button class="pbtn" id="lg-go">Войти</button>
+      <div class="perr" id="lg-err"></div>
+      <button class="plink" id="lg-back">Выбрать другую роль</button>
+    </div>
+  </div>
+  <div class="rails"></div>
+</div>
+
+<div id="app" hidden>
+  <header class="top">
+    <button class="menu-btn" id="menu-btn" aria-label="Меню"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <div class="brand" data-nav="">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <defs><linearGradient id="lgo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3cc4ff"/><stop offset="1" stop-color="#0a6fc2"/></linearGradient></defs>
+        <circle cx="24" cy="24" r="22" fill="url(#lgo)"/>
+        <circle cx="24" cy="24" r="12" fill="none" stroke="#fff" stroke-width="2.4"/>
+        <circle cx="24" cy="24" r="3.2" fill="#fff"/>
+        <path d="M24 12v4M24 32v4M12 24h4M32 24h4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M6 31c10 3 24 3 36-2M8 36c10 3 22 3 32-1" fill="none" stroke="#ffc20e" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <div><b>DepoTemirMind</b><small>Цифровое депо</small></div>
+    </div>
+    <nav class="nav" id="side">
+      <button class="mi" data-nav="">Главная</button>
+      <button class="mi" data-nav="depots">Депо и локомотивы</button>
+      <button class="mi" data-nav="staff">Персонал</button>
+      <button class="mi" data-nav="prio" data-need="mon">Диагностика</button>
+      <button class="mi" data-nav="repairs" data-need="plan">План ремонта</button>
+      <button class="mi" data-nav="chat">Иван, ИИ-помощник</button>
+      <button class="mi" data-nav="adm" data-need="admin">Администрирование</button>
+      <button class="mi" data-nav="profile">Профиль</button>
+      <button class="mi" data-nav="settings">Настройки</button>
+    </nav>
+    <div class="user"><b id="u-name"></b><span id="u-role"></span></div>
+    <button class="out" data-logout="1">Выйти</button>
+  </header>
+  <div class="veil" id="veil"></div>
+  <main class="main">
+    <div class="screen" id="home">
+      <div class="wrap">
+        <div class="eyebrow" id="welcome"></div>
+        <h1 class="hl">Безопасное депо с<br>DepoTemirMind</h1>
+
+        <div class="scene day" id="scene">
+          <div class="dnlabel" id="dnlabel"></div>
+          <svg id="scene-svg" viewBox="0 70 1600 520" role="img" aria-label="Электровоз KZ4AT КТЖ с пассажирскими вагонами">
+            <defs>
+              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#02060d"/><stop offset="1" stop-color="#081322"/></linearGradient>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f6a52"/><stop offset="1" stop-color="#0a4637"/></linearGradient>
+              <linearGradient id="wn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d58f"/><stop offset="1" stop-color="#b98a3e"/></linearGradient>
+              <linearGradient id="bl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d6ce6"/><stop offset="1" stop-color="#1649b0"/></linearGradient>
+              <linearGradient id="pn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfe4ec"/><stop offset="1" stop-color="#b3bbc6"/></linearGradient>
+              <linearGradient id="bal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#53565b"/><stop offset="1" stop-color="#14181b"/></linearGradient>
+              <linearGradient id="gs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c1611"/><stop offset="1" stop-color="#040806"/></linearGradient>
+              <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff3c4" stop-opacity=".55"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></linearGradient>
+            </defs>
+            <rect y="60" width="1600" height="540" fill="url(#sky)"/>
+            <g id="bg"></g><g id="sigs"></g>
+            <rect y="434" width="1600" height="3" fill="#8b97a7"/><rect y="437" width="1600" height="6" fill="#161b20"/>
+            <rect y="443" width="1600" height="56" fill="url(#bal)"/>
+            <path d="M0 455H1600M0 468H1600M0 481H1600" stroke="#7a7f86" stroke-width="5" stroke-dasharray="2 6" opacity=".3"/>
+            <rect y="499" width="1600" height="101" fill="url(#gs)"/>
+            <g id="train-host"></g>
+          </svg>
+        </div>
+
+
+        <div class="stats" id="stats"></div>
+
+        <div class="tabs" id="htabs"></div>
+        <table class="tbl">
+          <thead><tr><th>Дата</th><th>Тема</th></tr></thead>
+          <tbody id="hrows"></tbody>
+        </table>
+        <button class="more" data-nav="depots">Подробнее...</button>
+      </div>
+    </div>
+
+    <div class="screen" id="page">
+      <div class="bar">
+        <button class="back" id="back" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="title" id="title"></div>
+      </div>
+      <div id="body" style="flex:1;display:flex;flex-direction:column;min-height:0"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+  var DEPOTS = {
+    d1: { name: 'Депо 1', locos: [
+      { m: 'ТЭ33А «Evolution»', n: '№ 0412', s: 'work' },
+      { m: 'ТЭ33А «Evolution»', n: '№ 0587', s: 'work' },
+      { m: 'ТЭ33А «Evolution»', n: '№ 0701', s: 'work' },
+      { m: 'KZ8A', n: '№ 0023', s: 'reserve' },
+      { m: 'KZ8A', n: '№ 0057', s: 'work' },
+      { m: 'ВЛ80С', n: '№ 1348', s: 'work' },
+      { m: 'ТЭМ2', n: '№ 7655', s: 'reserve' }
+    ]},
+    d2: { name: 'Депо 2', locos: [
+      { m: 'KZ4AT', n: '№ 0096', s: 'work' },
+      { m: 'KZ4AT', n: '№ 0118', s: 'work' },
+      { m: 'KZ8A', n: '№ 0041', s: 'work' },
+      { m: 'ТЭ33А «Evolution»', n: '№ 0658', s: 'work' },
+      { m: 'ТЭ33А «Evolution»', n: '№ 0633', s: 'repair' },
+      { m: 'ВЛ80С', n: '№ 1402', s: 'reserve' },
+      { m: 'ТЭМ2', n: '№ 7710', s: 'reserve' }
+    ]}
+  };
+  var STATUS = { work: 'В работе', repair: 'В ремонте', reserve: 'В резерве' };
+
+  var IVAN_RULES = 'Ты — Иван, дружелюбный ИИ-помощник для железнодорожников: депо, локомотивы, ремонт, безопасность движения, документы и рабочие вопросы. ' +
+    'Отвечай по-русски, коротко и по делу, обращайся на «вы». Если не уверен или не знаешь точного ответа, честно скажи об этом и не выдумывай номера, нормы и цифры.';
+
+  var home = document.getElementById('home');
+  var page = document.getElementById('page');
+  var titleEl = document.getElementById('title');
+  var bodyEl = document.getElementById('body');
+  var stack = [];
+  var chatHistory = [];
+  var chatBusy = false;
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  function view(route) {
+    if (route.split(':')[0] === 'adm') { return hasTab('admin') ? admView(route) : denied(); }
+    if (route === 'depots') {
+      return { title: 'Выбор депо', html: '<div class="content">' +
+        Object.keys(DEPOTS).map(function (k) {
+          return '<button class="row" data-go="depot:' + k + '"><span>' + esc(DEPOTS[k].name) +
+            '<small>Локомотивов: ' + DEPOTS[k].locos.length + (can('crew') ? ' · Колонн: ' + COLS[k].length : '') + '</small></span><span class="chev">›</span></button>';
+        }).join('') + '</div>' };
+    }
+    if (/^staff(:|$)/.test(route)) { return staffView(route); }
+    if (route.indexOf('worker:') === 0) { return workerView(route); }
+    if (route.indexOf('depot:') === 0) { return depotView(route); }
+    if (route === 'prio') { return hasTab('mon') ? prioView() : denied(); }
+    if (route.indexOf('repairs') === 0) { return hasTab('plan') ? repairsView(route) : denied(); }
+    if (/^(crew|col|brig):/.test(route) && !can('crew')) { return denied(); }
+    if (route.indexOf('crew:') === 0) { return crewView(route); }
+    if (route.indexOf('brig:') === 0) { return brigView(route); }
+    if (route.indexOf('col:') === 0) { return colView(route); }
+    if (route.indexOf('loco:') === 0) { return locoView(route); }
+    if (route === 'profile') {
+      var ro = ROLES[session], ini = ro.person.split(' ').slice(0, 2).map(function (w) { return w[0]; }).join('');
+      var access = ro.tabs.map(function (t) { return TAB_NAMES[t]; });
+      if (ro.crew) access.push('Колонны и бригады');
+      if (ro.act) access.push('Управление мониторингом');
+      return { title: 'Профиль', html: '<div class="content">' +
+        '<div class="avatar">' + esc(ini) + '</div>' +
+        '<div class="pname">' + esc(ro.person) + '</div>' +
+        '<div class="prole">' + esc(ro.name) + '</div>' +
+        '<div class="info">' +
+          '<div><span>Табельный номер</span><span>' + ro.tab + '</span></div>' +
+          '<div><span>Роль</span><span>' + esc(ro.name) + '</span></div>' +
+          '<div><span>Депо</span><span>Депо 1, Депо 2</span></div>' +
+          '<div><span>Доступ</span><span>' + esc(access.join(', ')) + '</span></div>' +
+        '</div></div>' };
+    }
+    if (route === 'chat') {
+      return { title: 'Иван', init: initChat, html:
+        '<div class="chat">' +
+          '<div class="msgs" id="msgs"></div>' +
+          '<div class="composer">' +
+            '<textarea id="input" rows="1" placeholder="Напишите сообщение"></textarea>' +
+            '<button class="send" id="send" aria-label="Отправить"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>' +
+          '</div>' +
+        '</div>' };
+    }
+    if (route === 'settings') { return { title: 'Настройки', html: settingsHtml() }; }
+    return { title: '', html: '<div class="stub-body"><p>Временно не работает</p></div>' };
+  }
+
+  /* ---------- Чат ---------- */
+  function renderMsgs() {
+    var box = document.getElementById('msgs');
+    if (!box) return;
+    box.innerHTML = '';
+    if (!chatHistory.length) {
+      box.classList.add('is-empty');
+      var e = document.createElement('div');
+      e.className = 'empty';
+      e.innerHTML = '<div class="ico"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></div>';
+      var t = document.createElement('div');
+      t.textContent = 'Ваш личный товарищ где вы можете найти нужную информацию';
+      e.appendChild(t);
+      box.appendChild(e);
+      return;
+    }
+    box.classList.remove('is-empty');
+    chatHistory.forEach(function (m) {
+      var b = document.createElement('div');
+      b.className = 'bubble ' + (m.role === 'user' ? 'me' : 'ai') + (m.err ? ' err' : '');
+      b.textContent = m.content;
+      box.appendChild(b);
+    });
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function initChat() {
+    var input = document.getElementById('input');
+    var send = document.getElementById('send');
+    renderMsgs();
+
+    function grow() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; }
+    input.addEventListener('input', grow);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); }
+    });
+    send.addEventListener('click', go);
+
+    async function go() {
+      var text = input.value.trim();
+      if (!text || chatBusy) return;
+      input.value = ''; grow();
+      chatBusy = true; send.disabled = true;
+
+      chatHistory.push({ role: 'user', content: text });
+      var reply = { role: 'assistant', content: 'Иван печатает…' };
+      chatHistory.push(reply);
+      renderMsgs();
+
+      // Память не хранится между вызовами: отправляем всю историю + правила в первом сообщении
+      var payload = chatHistory.slice(0, -1).filter(function (m) { return !m.err; }).map(function (m) { return { role: m.role, content: m.content }; });
+      payload[0] = { role: 'user', content: IVAN_RULES + '\n\nСообщение пользователя: ' + payload[0].content };
+
+      try {
+        var sample = (window.claude && window.claude.use) ? await window.claude.use('sample') : null;
+        if (!sample) throw { code: 'unavailable' };
+        var res = await sample(payload, {
+          cache: false,
+          onText: function (t) {
+            reply.content = t.text;
+            var last = document.querySelector('#msgs .bubble:last-child');
+            if (last) { last.textContent = reply.content; document.getElementById('msgs').scrollTop = 1e9; }
+          }
+        });
+        reply.content = res.text || reply.content;
+      } catch (err) {
+        reply.err = true;
+        reply.content = (err && err.code === 'not_granted') ? 'Доступ к ИИ не разрешён. Разрешите его и попробуйте ещё раз.'
+          : (err && err.code === 'rate_limited') ? 'Слишком много запросов. Подождите немного.'
+          : 'Иван сейчас недоступен. Попробуйте позже.';
+      }
+      chatBusy = false; send.disabled = false;
+      if (document.getElementById('msgs')) renderMsgs();
+    }
+  }
+
+  /* ---------- Навигация ---------- */
+  var lastRt = null, lastLen = 0;
+  function animateIn(el, dir) {
+    el.classList.remove('pg-fwd', 'pg-back', 'pg-swap');
+    void el.offsetWidth;
+    el.classList.add('pg-' + dir);
+  }
+  function render() {
+    if (!session) { showLogin(); return; }
+    var lg = document.getElementById('login'); if (lg) lg.classList.remove('active');
+    shellOn();
+    var rt = stack.length ? stack[stack.length - 1] : '', fresh = rt !== lastRt, dirn = stack.length > lastLen ? 'fwd' : (stack.length < lastLen ? 'back' : 'swap'); lastRt = rt; lastLen = stack.length;
+    if (!stack.length) {
+      page.classList.remove('active');
+      home.classList.add('active');
+      renderHome();
+      if (fresh) { home.scrollTop = 0; window.scrollTo(0, 0); animateIn(home, dirn); }
+      return;
+    }
+    var v = view(stack[stack.length - 1]);
+    titleEl.textContent = v.title;
+    bodyEl.innerHTML = v.html;
+    home.classList.remove('active');
+    page.classList.add('active');
+    if (v.init) v.init();
+    if (fresh) { window.scrollTo(0, 0); var cn = document.querySelector('.content'); if (cn) cn.scrollTop = 0; animateIn(page, dirn); }
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-go]');
+    if (t) { stack.push(t.getAttribute('data-go')); render(); }
+  });
+  document.getElementById('back').addEventListener('click', function () { stack.pop(); render(); });
+
+  /* ---------- Колонны машинистов ---------- */
+  var TRAFFIC = {
+    passenger: ['Пассажирское', 'Пассажирское движение', 'Перевозка пассажирских составов'],
+    freight: ['Грузовое', 'Грузовое движение', 'Перевозка грузовых составов'],
+    shunting: ['Маневровое', 'Маневровое движение', 'Работа на станциях и в депо']
+  };
+  var HELPERS = {
+    'd1:0': [['Жумабеков Нурлан Асхатович', '3 года'], ['Ким Андрей Олегович', '2 года'], ['Оспанов Данияр Ержанович', '1 год'], ['Сейлханов Аскар Мейрамович', '1 год']],
+    'd1:1': [['Смагулов Ильяс Дастанович', '2 года'], ['Тулегенов Руслан Бекович', '4 года'], ['Кузнецов Артём Игоревич', '3 года'], ['Жаксыбеков Ильяс Бауыржанович', '2 года']],
+    'd2:0': [['Адилов Арлан Рахатович', '3 года'], ['Сарсенов Нурсултан Ермекович', '2 года'], ['Рахимов Диас Нурланович', '1 год'], ['Нурпеисов Темирлан Асетович', '1 год']],
+    'd2:1': [['Попов Роман Андреевич', '2 года'], ['Мамытов Бекзат Асылбекович', '1 год'], ['Токтаров Ерлан Муратович', '3 года'], ['Беков Санжар Русланович', '1 год']]
+  };
+  var CREW_STATUS = { work: ['На смене', 's-work'], rest: ['Отдых', 's-reserve'], leave: ['Отпуск', 's-repair'] };
+  var COLS = {
+    d1: [
+      { n: 'Колонна № 1', head: 'Сейтказин Ержан Маратович', t: 'passenger', drivers: [
+        ['Нургалиев Арман Серикович', '1 класс', '14 лет', 'work'],
+        ['Ахметов Данияр Болатович', '1 класс', '11 лет', 'work'],
+        ['Ким Александр Петрович', '2 класс', '8 лет', 'rest'],
+        ['Жумабаев Тимур Ералиевич', '2 класс', '5 лет', 'leave'] ] },
+      { n: 'Колонна № 2', head: 'Орлов Сергей Викторович', t: 'freight', drivers: [
+        ['Иванов Павел Андреевич', '1 класс', '17 лет', 'work'],
+        ['Касымов Нурлан Айдарович', '2 класс', '7 лет', 'work'],
+        ['Борисов Игорь Николаевич', '3 класс', '3 года', 'rest'],
+        ['Мукашев Бауыржан Сакенович', '2 класс', '6 лет', 'work'] ] },
+      { n: 'Колонна № 3', head: 'Темиров Аскар Нурланович', t: 'shunting', drivers: [
+        ['Сабитов Руслан Кайратович', '1 класс', '12 лет', 'rest'],
+        ['Петров Дмитрий Олегович', '2 класс', '9 лет', 'work'],
+        ['Есенов Мейрам Дастанович', '3 класс', '2 года', 'work'],
+        ['Алиев Рустам Эльдарович', '3 класс', '4 года', 'leave'] ] }
+    ],
+    d2: [
+      { n: 'Колонна № 1', head: 'Байжанов Куаныш Серикович', t: 'passenger', drivers: [
+        ['Омаров Ермек Талгатович', '1 класс', '15 лет', 'work'],
+        ['Лебедев Андрей Валерьевич', '1 класс', '13 лет', 'work'],
+        ['Нуралиев Самат Жандосович', '2 класс', '6 лет', 'rest'],
+        ['Ушаков Максим Игоревич', '3 класс', '3 года', 'work'] ] },
+      { n: 'Колонна № 2', head: 'Смагулов Талгат Бериккалиевич', t: 'freight', drivers: [
+        ['Тулеуов Асхат Маратович', '1 класс', '10 лет', 'rest'],
+        ['Фролов Владимир Сергеевич', '2 класс', '8 лет', 'work'],
+        ['Курманов Ерболат Нуржанович', '2 класс', '5 лет', 'leave'],
+        ['Дюсенов Жандос Аскарович', '3 класс', '1 год', 'work'] ] },
+      { n: 'Колонна № 3', head: 'Шевченко Олег Анатольевич', t: 'shunting', drivers: [
+        ['Бекбулатов Айбек Муратович', '1 класс', '16 лет', 'work'],
+        ['Попов Кирилл Денисович', '2 класс', '7 лет', 'rest'],
+        ['Султанов Ержан Багдатович', '2 класс', '6 лет', 'work'],
+        ['Мусин Данияр Кайратович', '3 класс', '2 года', 'work'] ] }
+    ]
+  };
+  /* ---------- Локомотивные бригады ---------- */
+  var BRIGS = {
+    d1: [
+      { driver: ['Нургалиев Арман Серикович', 1], helper: 'Жумабеков Нурлан Асхатович', last: '11.10.2026 06:00', next: '13.10.2026 14:00' },
+      { driver: ['Ахметов Данияр Болатович', 1], helper: 'Ким Андрей Олегович', last: '11.10.2026 14:00', next: '13.10.2026 22:00' },
+      { driver: ['Иванов Павел Андреевич', 1], helper: 'Оспанов Данияр Ержанович', last: '10.10.2026 22:00', next: '12.10.2026 22:00' },
+      { driver: ['Касымов Нурлан Айдарович', 2], helper: 'Смагулов Ильяс Дастанович', last: '11.10.2026 08:30', next: '13.10.2026 08:30' },
+      { driver: ['Петров Дмитрий Олегович', 2], helper: 'Тулегенов Руслан Бекович', last: '10.10.2026 18:00', next: '12.10.2026 18:00' },
+      { driver: ['Сабитов Руслан Кайратович', 1], helper: 'Нуртаев Айдос Мирамович', last: '11.10.2026 20:00', next: '14.10.2026 06:00' },
+      { driver: ['Борисов Игорь Николаевич', 3], helper: 'Кузнецов Артём Игоревич', last: '12.10.2026 04:00', next: '14.10.2026 12:00' }
+    ],
+    d2: [
+      { driver: ['Омаров Ермек Талгатович', 1], helper: 'Адилов Арлан Рахатович', last: '11.10.2026 05:30', next: '13.10.2026 13:30' },
+      { driver: ['Лебедев Андрей Валерьевич', 1], helper: 'Сарсенов Нурсултан Ермекович', last: '11.10.2026 13:00', next: '13.10.2026 21:00' },
+      { driver: ['Бекбулатов Айбек Муратович', 1], helper: 'Рахимов Диас Нурланович', last: '10.10.2026 21:00', next: '12.10.2026 21:00' },
+      { driver: ['Фролов Владимир Сергеевич', 2], helper: 'Попов Роман Андреевич', last: '11.10.2026 09:00', next: '13.10.2026 09:00' },
+      { driver: ['Султанов Ержан Багдатович', 2], helper: 'Мамытов Бекзат Асылбекович', last: '10.10.2026 17:30', next: '12.10.2026 17:30' },
+      { driver: ['Тулеуов Асхат Маратович', 1], helper: 'Токтаров Ерлан Муратович', last: '11.10.2026 19:30', next: '14.10.2026 05:30' },
+      { driver: ['Мусин Данияр Кайратович', 3], helper: 'Исмаилов Алибек Тимурович', last: '12.10.2026 03:00', next: '14.10.2026 11:00' }
+    ]
+  };
+  function shortFio(full) { var q = full.split(' '); return q[0] + ' ' + q[1][0] + '.' + q[2][0] + '.'; }
+  function brigView(route) {
+    var dk = route.slice(5), d = DEPOTS[dk];
+    return { title: d.name, html: '<div class="content">' + segHtml(dk, 'brig') +
+      BRIGS[dk].map(function (b, i) {
+        return '<' + (can('admin') ? 'button data-go="adm:brig:' + dk + ':' + i + '"' : 'div') + ' class="row"><span>Бригада ' + (i + 1) +
+          '<small>Машинист: ' + esc(shortFio(b.driver[0])) + ' · помощник: ' + esc(shortFio(b.helper)) + '</small>' +
+          '<small>Последняя явка: ' + esc(b.last) + '</small>' +
+          '<small>Следующая явка: ' + esc(b.next) + '</small>' +
+          '<small>Стаж: машинист ' + esc(b.dT || '—') + ' · помощник ' + esc(b.hT || '—') + ' · ' + CREW_STATUS[b.st || 'work'][0] + '</small></span>' +
+          '<span class="badge cls-' + b.driver[1] + '">' + b.driver[1] + ' класс</span></' + (can('admin') ? 'button' : 'div') + '>';
+      }).join('') + '</div>' };
+  }
+  function segHtml(dk, active) {
+    if (!can('crew')) return '';
+    return '<div class="seg">' +
+      '<button class="' + (active === 'locos' ? 'on' : '') + '" data-swap="depot:' + dk + '">Локомотивы</button>' +
+      '<button class="' + (active === 'crew' ? 'on' : '') + '" data-swap="crew:' + dk + '">Колонны</button>' +
+      '<button class="' + (active === 'brig' ? 'on' : '') + '" data-swap="brig:' + dk + '">Бригады</button>' +
+    '</div>';
+  }
+  function depotView(route) {
+    var dk = route.slice(6), d = DEPOTS[dk];
+    return { title: d.name, html: '<div class="content">' + segHtml(dk, 'locos') +
+      d.locos.map(function (l, i) {
+        return '<button class="row" data-go="loco:' + dk + ':' + i + '"><span>' + esc(l.m) + '<small>' + esc(l.n) + ' · ' + lkind(l.m.split(' ')[0]) + ' · ремонт: ' + (RDEP[l.m.split(' ')[0]] || '—') + ' · диагностика: <span class="dg-' + summarize(getTelem(dk, i)).worst + '">' + summarize(getTelem(dk, i)).text + '</span></small></span><span class="rt">' +
+          '<span class="badge s-' + l.s + '">' + STATUS[l.s] + '</span><span class="chev">›</span></span></button>';
+      }).join('') + '</div>' };
+  }
+  function crewView(route) {
+    var dk = route.slice(5), d = DEPOTS[dk];
+    return { title: d.name, html: '<div class="content">' + segHtml(dk, 'crew') +
+      COLS[dk].map(function (c, i) {
+        return '<button class="row" data-go="col:' + dk + ':' + i + '"><span>' + esc(c.n) +
+          '<small>Инструктор: ' + esc(c.head) + ' · машинистов: ' + c.drivers.length + ((HELPERS[dk + ':' + i] || []).length ? ' · помощников: ' + HELPERS[dk + ':' + i].length : '') + '</small></span><span class="rt"><span class="badge t-' + c.t + '">' + TRAFFIC[c.t][0] + '</span><span class="chev">›</span></span></button>';
+      }).join('') + '</div>' };
+  }
+  function colView(route) {
+    var p = route.split(':'), c = COLS[p[1]][+p[2]], tr = TRAFFIC[c.t];
+    var hl = HELPERS[p[1] + ':' + p[2]] || [];
+    return { title: c.n, html: '<div class="content">' +
+      '<div class="sec">Движение</div>' +
+      '<div class="row"><span>' + tr[1] + '<small>' + tr[2] + '</small></span><span class="badge t-' + c.t + '">' + tr[0] + '</span></div>' +
+      '<div class="sec">Инструктор колонны</div>' +
+      '<button class="row" data-go="worker:' + wid(c.head) + '"><span>' + esc(c.head) + '<small>Инструктор колонны</small></span><span class="chev">›</span></button>' +
+      '<div class="sec">Машинисты</div>' +
+      c.drivers.map(function (m, i) {
+        var st = CREW_STATUS[m[3]], h = hl[i];
+        return '<button class="row" data-go="worker:' + wid(m[0]) + '"><span>' + esc(m[0]) + '<small>Машинист · ' + esc(m[1]) + ' · стаж ' + esc(m[2]) + '</small>' +
+          (h ? '<small>Помощник: ' + esc(h[0]) + ' · стаж ' + esc(h[1]) + '</small>' : '') + '</span>' +
+          '<span class="rt"><span class="badge ' + st[1] + '">' + st[0] + '</span><span class="chev">›</span></span></button>';
+      }).join('') +
+    '</div>' };
+  }
+  document.addEventListener('click', function (e) {
+    var sw = e.target.closest('[data-swap]');
+    if (sw) { stack[stack.length - 1] = sw.getAttribute('data-swap'); render(); }
+  });
+
+  /* ---------- Локомотивы ---------- */
+  var MODELS = {
+    'ТЭ33А': { weight: '≈ 138 т', type: 'Магистральный грузовой тепловоз', builder: 'Астана, СП КТЖ и General Electric', power: '≈ 3 300 кВт (4 400 л.с.)', speed: 'до 120 км/ч',
+      about: 'Тепловоз на базе американской платформы GE Evolution Series. Собирается в Астане и стал основой грузового парка Казахстана, постепенно заменяя старые советские тепловозы.' },
+    'KZ8A': { weight: '≈ 200 т', type: 'Грузовой электровоз переменного тока 25 кВ', builder: 'Астана, Электровоз Курастыру Зауыты (с Alstom)', power: '8 800 кВт', speed: 'до 120 км/ч',
+      about: 'Двухсекционный восьмиосный электровоз для тяжёлых грузовых поездов. Собирается в Астане и работает на электрифицированных магистралях страны.' },
+    'KZ4AT': { weight: '≈ 200 т', type: 'Грузовой электровоз переменного тока 25 кВ', builder: 'Астана, Электровоз Курастыру Зауыты',
+      about: 'Электровоз казахстанской сборки для грузовой работы на электрифицированных линиях.' },
+    'ВЛ80С': { weight: '≈ 192 т', type: 'Грузовой электровоз переменного тока', builder: 'Новочеркасский электровозостроительный завод, Россия', power: '6 520 кВт', speed: 'до 110 км/ч',
+      about: 'Восьмиосный двухсекционный электровоз советской конструкции. Многие годы был рабочей лошадкой на электрифицированных линиях.' },
+    'ТЭМ2': { weight: '≈ 120 т', type: 'Маневровый тепловоз', builder: 'Брянский машиностроительный завод, СССР', power: '883 кВт (1 200 л.с.)', speed: 'до 100 км/ч',
+      about: 'Лёгкий маневровый тепловоз для работы на станциях и в депо. Выпускался десятилетиями, поэтому его до сих пор можно встретить повсюду.' }
+  };
+  var UNITS = {
+    '0701': { year: 2022, km: '210 000', last: 'ТО-2 · 09.09.2026', next: 'ТО-2 · 09.12.2026', hist: [
+      ['2022', 'Новый тепловоз пришёл в Депо 1.'],
+      ['2024', 'Плановая замена фильтров и масла.'],
+      ['2026', 'Работает на грузовых линиях без замечаний.'] ] },
+    '0057': { year: 2020, km: '298 000', last: 'ТО-2 · 28.08.2026', next: 'ТО-2 · 28.11.2026', hist: [
+      ['2020', 'Принят в эксплуатацию, приписан к Депо 1.'],
+      ['2023', 'Обновлена система диагностики.'],
+      ['2026', 'Плановое ТО, замечаний нет.'] ] },
+    '7655': { year: 1985, km: '980 000', last: 'ТО-2 · 12.04.2026', next: 'по необходимости', hist: [
+      ['1985', 'Построен в Брянске, работает на станционных путях.'],
+      ['2008', 'Капитальный ремонт с заменой дизеля.'],
+      ['2022', 'Переведён в резерв депо.'] ] },
+    '0658': { year: 2018, km: '640 000', last: 'ТО-2 · 20.08.2026', next: 'ТО-2 · 20.11.2026', hist: [
+      ['2018', 'Поступил в Депо 2 и сразу вышел на грузовые рейсы.'],
+      ['2022', 'Заменён генератор после планового осмотра.'],
+      ['2026', 'Работает по графику, замечаний нет.'] ] },
+    '0118': { year: 2021, km: '312 000', last: 'ТО-2 · 04.09.2026', next: 'ТО-2 · 04.12.2026', hist: [
+      ['2021', 'Принят в эксплуатацию.'],
+      ['2024', 'Обновлено программное обеспечение блока управления.'],
+      ['2026', 'Плановое ТО без замечаний.'] ] },
+    '1402': { year: 1991, km: '4 520 000', last: 'ТО-3 · 15.05.2026', next: 'ТО-3 · 15.11.2026', hist: [
+      ['1991', 'Выпущен в Новочеркасске.'],
+      ['2005', 'Капитальный ремонт тяговых двигателей.'],
+      ['2019', 'Продлён срок службы, переведён в резерв.'] ] },
+    '0412': { year: 2013, km: '1 248 000', last: 'ТО-3 · 14.08.2026', next: 'ТО-3 · 14.02.2027', hist: [
+      ['2013', 'Поступил в депо новым и сразу встал на грузовые рейсы.'],
+      ['2017', 'Первый средний ремонт, заменены тяговые двигатели.'],
+      ['2022', 'Обновлена бортовая система управления и диагностики.'],
+      ['2026', 'Плановое ТО-3, замечаний нет.'] ] },
+    '0587': { year: 2015, km: '986 000', last: 'ТО-2 · 02.09.2026', next: 'ТО-2 · 02.12.2026', hist: [
+      ['2015', 'Принят в эксплуатацию, приписан к Депо 1.'],
+      ['2019', 'Заменён турбокомпрессор после планового осмотра.'],
+      ['2024', 'Прошёл капитальный ремонт дизельной группы.'] ] },
+    '0023': { year: 2018, km: '412 000', last: 'ТО-2 · 21.07.2026', next: 'ТО-2 · 21.10.2026', hist: [
+      ['2018', 'Новый электровоз пришёл в депо с завода в Астане.'],
+      ['2021', 'Установлена система контроля бдительности машиниста.'],
+      ['2025', 'Плановый ремонт токоприёмников.'] ] },
+    '1348': { year: 1989, km: '4 870 000', last: 'ТО-3 · 05.06.2026', next: 'ТО-3 · 05.12.2026', hist: [
+      ['1989', 'Выпущен в Новочеркасске и отправлен в Казахстан.'],
+      ['2003', 'Капитальный ремонт с заменой обмоток тяговых двигателей.'],
+      ['2016', 'Продлён срок службы после обследования.'],
+      ['2026', 'Работает на грузовых линиях, пробег приближается к 5 млн км.'] ] },
+    '0096': { year: 2016, km: '768 000', last: 'ТО-2 · 11.08.2026', next: 'ТО-2 · 11.11.2026', hist: [
+      ['2016', 'Поступил в Депо 2, первые рейсы с тяжёлыми составами.'],
+      ['2020', 'Обновлено программное обеспечение блока управления.'],
+      ['2025', 'Плановая замена колёсных пар.'] ] },
+    '0041': { year: 2019, km: '355 000', last: 'ТО-2 · 30.08.2026', next: 'ТО-2 · 30.11.2026', hist: [
+      ['2019', 'Приписан к Депо 2.'],
+      ['2022', 'Прошёл обкатку на горном участке, замечаний нет.'],
+      ['2025', 'Плановое ТО-3, заменены тормозные колодки.'] ] },
+    '7710': { year: 1982, km: '1 120 000', last: 'ТО-2 · 17.03.2026', next: 'по необходимости', hist: [
+      ['1982', 'Построен в Брянске и пришёл на станцию маневровым.'],
+      ['1999', 'Капитальный ремонт после аварийной остановки.'],
+      ['2018', 'Переведён в резерв, используется при пиковой нагрузке.'] ] },
+    '0633': { year: 2017, km: '690 000', last: 'ТР-1 · 25.09.2026', next: 'после выхода из ремонта', hist: [
+      ['2017', 'Новый тепловоз пришёл в Депо 2.'],
+      ['2021', 'Заменены топливные форсунки.'],
+      ['2026', 'Находится в ремонте, идёт замена тормозного оборудования.'] ] }
+  };
+  /* ---------- Предиктивное обслуживание: паспорт, мониторинг, план ---------- */
+  var ELECTRIC = { 'KZ8A': 1, 'KZ4AT': 1, 'ВЛ80С': 1 };
+  var NODE_SETS = {
+    diesel: [
+      { name: 'Дизель (масло)', tw: 88, tc: 98, vw: 4.5, vc: 7.1, w: 3, p: { w: 2.5, c: 1.5 } },
+      { name: 'Турбокомпрессор', tw: 105, tc: 120, vw: 4.5, vc: 7.1, w: 2, p: { w: 1.8, c: 1.2 } },
+      { name: 'Тяговый двигатель ТД-1', tw: 110, tc: 130, vw: 4.5, vc: 7.1, w: 3, a: { w: 850, c: 1050 } },
+      { name: 'Тяговый двигатель ТД-4', tw: 110, tc: 130, vw: 4.5, vc: 7.1, w: 3, a: { w: 850, c: 1050 } },
+      { name: 'Буксовый узел колёсной пары 1', tw: 65, tc: 80, vw: 4.5, vc: 7.1, w: 3 },
+      { name: 'Топливный насос', tw: 70, tc: 85, vw: 3.5, vc: 5.6, w: 2, a: { w: 22, c: 30 } }
+    ],
+    electric: [
+      { name: 'Тяговый двигатель ТД-1', tw: 110, tc: 130, vw: 4.5, vc: 7.1, w: 3, a: { w: 850, c: 1050 } },
+      { name: 'Тяговый трансформатор (масло)', tw: 85, tc: 95, vw: 3.5, vc: 5.6, w: 3, p: { w: 1.5, c: 1.0 }, a: { w: 320, c: 420 } },
+      { name: 'Преобразователь / выпрямитель', tw: 80, tc: 95, vw: 2.8, vc: 4.5, w: 2, a: { w: 900, c: 1100 } },
+      { name: 'Мотор-вентилятор', tw: 70, tc: 85, vw: 4.5, vc: 7.1, w: 1, a: { w: 45, c: 60 } },
+      { name: 'Тяговый редуктор', tw: 90, tc: 105, vw: 4.5, vc: 7.1, w: 3, p: { w: 1.5, c: 1.0 } },
+      { name: 'Буксовый узел колёсной пары 1', tw: 65, tc: 80, vw: 4.5, vc: 7.1, w: 3 }
+    ]
+  };
+  var LV_COLOR = ['#3ecf8e', '#f5b301', '#d62839'];
+  var LV_TEXT = ['Норма', 'Внимание', 'Критично'];
+  var TELEM = {};
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function r1(x) { return Math.round(x * 10) / 10; }
+  function r2(x) { return Math.round(x * 100) / 100; }
+  function line(rnd, a, b, noise) {
+    var out = [];
+    for (var k = 0; k < 8; k++) out.push(a + (b - a) * (k / 7) + (rnd() - 0.5) * noise);
+    return out;
+  }
+  function buildTelem(dk, i) {
+    var l = DEPOTS[dk].locos[i], mk = l.m.split(' ')[0];
+    var defs = ELECTRIC[mk] ? NODE_SETS.electric : NODE_SETS.diesel;
+    var num = parseInt(l.n.replace(/\D/g, ''), 10) || 1;
+    var rnd = mulberry32(num * 7 + (dk === 'd1' ? 1 : 2));
+    var load = l.s === 'work' ? 1 : 0.3;
+    var badIdx = -1, mode = '';
+    if (l.s === 'repair') { badIdx = Math.floor(rnd() * defs.length); mode = 'crit'; }
+    else if (l.s === 'work' && num % 4 === 1) { badIdx = Math.floor(rnd() * defs.length); mode = rnd() < 0.5 ? 'over' : 'pred'; }
+    var nodes = defs.map(function (d, k) {
+      var hotT = d.tw * (0.74 + rnd() * 0.08), hotV = d.vw * (0.45 + rnd() * 0.12);
+      var baseT = 18 + (hotT - 18) * load, baseV = hotV * (0.2 + 0.8 * load);
+      var n = { def: d, baseT: baseT, baseV: baseV, dt: 0, dv: 0, dp: 0, da: 0 };
+      if (d.p) n.baseP = d.p.w * (1.2 + rnd() * 0.1) * (0.93 + 0.07 * load);
+      if (d.a) n.baseA = d.a.w * (0.5 + rnd() * 0.12) * (0.25 + 0.75 * load);
+      if (k === badIdx) {
+        var endT, endV, endP = 0, endA = 0;
+        if (mode === 'crit') { endT = d.tc * 1.03; endV = d.vc * 1.05; if (d.p) endP = d.p.c * 0.93; if (d.a) endA = d.a.c * 1.05; }
+        else if (mode === 'over') { endT = d.tw * 1.07; endV = d.vw * 1.12; if (d.p) endP = d.p.w * 0.93; if (d.a) endA = d.a.w * 1.06; }
+        else { endT = d.tw * 0.9; endV = d.vw * 0.9; if (d.p) endP = d.p.w * 1.08; if (d.a) endA = d.a.w * 0.92; }
+        n.t = line(rnd, d.tw * 0.8, endT, 1.2).map(Math.round);
+        n.v = line(rnd, d.vw * 0.65, endV, 0.1).map(r1);
+        if (d.p) n.p = line(rnd, d.p.w * 1.3, endP, d.p.w * 0.01).map(r2);
+        if (d.a) n.a = line(rnd, d.a.w * 0.7, endA, d.a.w * 0.006).map(Math.round);
+        if (mode !== 'crit') {
+          n.dt = (endT - d.tw * 0.8) / 7; n.dv = (endV - d.vw * 0.65) / 7;
+          if (d.p) n.dp = (endP - d.p.w * 1.3) / 7;
+          if (d.a) n.da = (endA - d.a.w * 0.7) / 7;
+        }
+      } else {
+        n.t = line(rnd, baseT, baseT, 2).map(Math.round);
+        n.v = line(rnd, baseV, baseV, 0.2).map(function (x) { return r1(Math.max(0.1, x)); });
+        if (d.p) n.p = line(rnd, n.baseP, n.baseP, d.p.w * 0.015).map(r2);
+        if (d.a) n.a = line(rnd, n.baseA, n.baseA, d.a.w * 0.01).map(Math.round);
+      }
+      return n;
+    });
+    return { nodes: nodes };
+  }
+  function getTelem(dk, i) {
+    var key = dk + ':' + i;
+    if (!TELEM[key]) { TELEM[key] = buildTelem(dk, i); addHistory(TELEM[key], dk, i); }
+    return TELEM[key];
+  }
+  function pushReading(n, t, v, p, a) {
+    n.t.push(Math.round(t)); n.v.push(r1(Math.max(0.1, v)));
+    if (n.p) n.p.push(r2(Math.max(0.1, p)));
+    if (n.a) n.a.push(Math.round(Math.max(1, a)));
+    if (n.t.length > 8) { n.t.shift(); n.v.shift(); if (n.p) n.p.shift(); if (n.a) n.a.shift(); }
+  }
+  function tickTelem(tl) {
+    tl.nodes.forEach(function (n) {
+      var L = n.t.length, d = n.def, t = n.t[L - 1], v = n.v[L - 1], p = n.p ? n.p[L - 1] : 0, a = n.a ? n.a[L - 1] : 0, rr = Math.random;
+      if (n.dt || n.dv || n.dp || n.da) pushReading(n, t + n.dt + (rr() - 0.5) * 1.2, v + n.dv + (rr() - 0.5) * 0.1, p + n.dp + (rr() - 0.5) * (d.p ? d.p.w * 0.02 : 0), a + n.da + (rr() - 0.5) * (d.a ? d.a.w * 0.01 : 0));
+      else pushReading(n, t + (n.baseT - t) * 0.3 + (rr() - 0.5) * 2, v + (n.baseV - v) * 0.3 + (rr() - 0.5) * 0.2,
+        p + ((n.baseP || 0) - p) * 0.3 + (rr() - 0.5) * (d.p ? d.p.w * 0.03 : 0), a + ((n.baseA || 0) - a) * 0.3 + (rr() - 0.5) * (d.a ? d.a.w * 0.02 : 0));
+    });
+  }
+  function simTelem(tl) {
+    var n = null;
+    tl.nodes.forEach(function (x) { if (x.sim) n = x; });
+    if (!n) {
+      tl.nodes.forEach(function (x) { if (!n && evalNode(x).lvl === 0 && (x.p || x.a)) n = x; });
+      tl.nodes.forEach(function (x) { if (!n && evalNode(x).lvl === 0) n = x; });
+      if (!n) n = tl.nodes[0];
+      n.sim = true;
+    }
+    var d = n.def, dp = n.p ? -d.p.w * 0.07 : 0, da = n.a ? d.a.w * 0.08 : 0;
+    for (var k = 0; k < 2; k++) {
+      var L = n.t.length;
+      pushReading(n, n.t[L - 1] + d.tw * 0.05, n.v[L - 1] + d.vw * 0.1, n.p ? n.p[L - 1] + dp : 0, n.a ? n.a[L - 1] + da : 0);
+    }
+    n.dt = d.tw * 0.05; n.dv = d.vw * 0.1; n.dp = dp; n.da = da;
+  }
+  function evalNode(n) {
+    var d = n.def, L = n.t.length, lvl = 0, why = [], fc = null, cnt = 0;
+    var P = [
+      { nm: 'температура', arr: n.t, w: d.tw, c: d.tc, u: '°C', dec: 0, ms: 0.2, low: false },
+      { nm: 'вибрация', arr: n.v, w: d.vw, c: d.vc, u: 'мм/с', dec: 1, ms: 0.05, low: false }
+    ];
+    if (n.p) P.push({ nm: 'давление масла', arr: n.p, w: d.p.w, c: d.p.c, u: 'бар', dec: 1, ms: d.p.w * 0.02, low: true });
+    if (n.a) P.push({ nm: 'ток', arr: n.a, w: d.a.w, c: d.a.c, u: 'А', dec: 0, ms: d.a.w * 0.012, low: false });
+    P.forEach(function (q) {
+      var x = q.arr[L - 1], sl = (x - q.arr[L - 4]) / 3, xs = x.toFixed(q.dec);
+      var isC = q.low ? x <= q.c : x >= q.c, isW = q.low ? x <= q.w : x >= q.w;
+      if (isC) { lvl = 2; cnt++; why.push(q.nm + ' ' + xs + ' ' + q.u + (q.low ? ' ниже критического (' : ' выше критической (') + q.c + ' ' + q.u + ')'); }
+      else if (isW) { lvl = Math.max(lvl, 1); cnt++; why.push(q.nm + ' ' + xs + ' ' + q.u + (q.low ? ' ниже нормы (от ' : ' выше нормы (до ') + q.w + ' ' + q.u + ')'); }
+      else {
+        var rate = q.low ? -sl : sl;
+        if (rate > q.ms) {
+          var h = Math.abs(x - q.w) / rate;
+          if (h <= 12) {
+            lvl = Math.max(lvl, 1); cnt++; fc = fc === null ? h : Math.min(fc, h);
+            why.push(q.nm + (q.low ? ' падает' : ' растёт') + ', прогноз: предел нормы будет достигнут через ~' + Math.max(1, Math.round(h)) + ' ч');
+          }
+        }
+      }
+    });
+    return { lvl: lvl, why: why, t: n.t[L - 1], v: n.v[L - 1], p: n.p ? n.p[L - 1] : null, a: n.a ? n.a[L - 1] : null, fc: fc, cnt: cnt };
+  }
+  function summarize(tl) {
+    var n1 = 0, n2 = 0;
+    tl.nodes.forEach(function (n) { var e = evalNode(n); if (e.lvl === 1) n1++; if (e.lvl === 2) n2++; });
+    var worst = n2 ? 2 : (n1 ? 1 : 0);
+    var text = worst === 2 ? 'критично, узлов: ' + (n1 + n2) : (worst === 1 ? 'требуют проверки узлов: ' + n1 : 'норма');
+    return { n1: n1, n2: n2, worst: worst, text: text };
+  }
+
+  /* ---------- Приоритет диагностики ---------- */
+  var PR_LBL = { 1: 'Срочно', 2: 'Высокий', 3: 'Средний' };
+  var PR_SLA = { 1: 'немедленно, до выхода локомотива в рейс', 2: 'в течение 24 часов', 3: 'до ближайшего планового ТО' };
+  var PR_COLOR = { 1: '#ff4d5e', 2: '#f2b705', 3: '#25a8f0' };
+  var PRIO_F = '0';
+  function prio(n, e, l) {
+    if (!e.lvl) return null;
+    var w = n.def.w || 2, sc = 0, r = [], sm = [];
+    var b = e.lvl === 2 ? 60 : 30; sc += b;
+    r.push('Уровень отклонения: ' + (e.lvl === 2 ? 'критичный' : 'предупредительный') + ' (+' + b + ')');
+    sm.push(e.lvl === 2 ? 'критичный уровень' : 'предупредительный уровень');
+    var pc = e.cnt * 6; sc += pc;
+    r.push('Параметров вне нормы или с опасным трендом: ' + e.cnt + ' (+' + pc + ')');
+    sm.push('параметров: ' + e.cnt);
+    var wt = w === 3 ? 'высокая' : (w === 2 ? 'средняя' : 'низкая');
+    sc += w * 5;
+    r.push('Важность узла для безопасности движения: ' + wt + ' (+' + (w * 5) + ')');
+    sm.push('важность узла: ' + wt);
+    var st = l.s === 'work' ? 10 : (l.s === 'repair' ? -5 : 0); sc += st;
+    if (l.s === 'work') { r.push('Локомотив в работе: отказ возможен в рейсе (+10)'); sm.push('локомотив в работе'); }
+    else if (l.s === 'reserve') { r.push('Локомотив в резерве: его можно заменить другим (0)'); sm.push('локомотив в резерве'); }
+    else { r.push('Локомотив уже в ремонте: узел находится на ремонтной позиции (−5)'); sm.push('локомотив в ремонте'); }
+    if (e.fc !== null) {
+      var fb = e.fc <= 4 ? 10 : 5; sc += fb;
+      r.push('Прогноз: предел нормы будет достигнут через ~' + Math.max(1, Math.round(e.fc)) + ' ч (+' + fb + ')');
+      sm.push('прогноз ~' + Math.max(1, Math.round(e.fc)) + ' ч');
+    }
+    var cls = sc >= 80 ? 1 : (sc >= 60 ? 2 : 3);
+    return { score: sc, cls: cls, label: PR_LBL[cls], sla: PR_SLA[cls], reasons: r, sum: 'P' + cls + ' · ' + sc + ' б.: ' + sm.join(', ') };
+  }
+  function prBadge(p) { return '<span class="badge pr-' + p.cls + '">P' + p.cls + ' · ' + p.label + '</span>'; }
+  function diagBadge(lvl) { return '<span class="badge dg-' + lvl + '">' + LV_TEXT[lvl] + '</span>'; }
+  function spark(arr, lim, color) {
+    var w = 100, h = 30;
+    var mn = Math.min.apply(null, arr.concat([lim * 0.5])), mx = Math.max.apply(null, arr.concat([lim * 1.02]));
+    function y(x) { return (h - 3 - (x - mn) / (mx - mn) * (h - 6)).toFixed(1); }
+    var pts = arr.map(function (x, k) { return (k * (w / (arr.length - 1))).toFixed(1) + ',' + y(x); }).join(' ');
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none"><line x1="0" x2="' + w + '" y1="' + y(lim) + '" y2="' + y(lim) + '" stroke="#8d96a3" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+      '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';
+  }
+  function meter(label, val, unit, warn, crit) {
+    var pct = Math.min(100, val / crit * 100);
+    var c = val >= crit ? LV_COLOR[2] : (val >= warn ? LV_COLOR[1] : LV_COLOR[0]);
+    var shown = (unit === '°C' || unit === 'А') ? String(val) : val.toFixed(1);
+    return '<div class="mrow"><span>' + label + '</span><span><b>' + shown + ' ' + unit + '</b> · норма до ' + warn + '</span></div>' +
+      '<div class="mbar"><i style="width:' + pct.toFixed(0) + '%;background:' + c + '"></i></div>';
+  }
+  function meterLow(label, val, unit, warn, crit) {
+    var pct = Math.min(100, val / (warn * 1.6) * 100);
+    var c = val <= crit ? LV_COLOR[2] : (val <= warn ? LV_COLOR[1] : LV_COLOR[0]);
+    return '<div class="mrow"><span>' + label + '</span><span><b>' + val.toFixed(1) + ' ' + unit + '</b> · норма от ' + warn + '</span></div>' +
+      '<div class="mbar"><i style="width:' + pct.toFixed(0) + '%;background:' + c + '"></i></div>';
+  }
+  function prBox(pr) {
+    return '<div class="pbox"><div class="pt">Приоритет P' + pr.cls + ' · ' + pr.label + ' · ' + pr.score + ' баллов</div>' +
+      pr.reasons.map(function (x) { return '<div class="pl">• ' + esc(x) + '</div>'; }).join('') +
+      '<div style="margin-top:6px"><b>Срок устранения:</b> ' + esc(pr.sla) + '</div></div>';
+  }
+  function nodeHtml(n, l) {
+    var e = evalNode(n), d = n.def, col = LV_COLOR[e.lvl], pr = prio(n, e, l);
+    var rec = e.lvl === 2 ? 'Рекомендация: вывести из эксплуатации, провести внеплановый осмотр и ремонт узла. Узел включён в перечень оборудования для ремонта.'
+      : 'Рекомендация: провести проверку узла. Узел включён в перечень оборудования, требующего технического обслуживания.';
+    return '<div class="node" style="border-left-color:' + col + '">' +
+      '<div class="nh"><b>' + esc(d.name) + '</b><span class="rt">' + (pr ? prBadge(pr) : '') + diagBadge(e.lvl) + '</span></div>' +
+      meter('Температура', e.t, '°C', d.tw, d.tc) + meter('Вибрация', e.v, 'мм/с', d.vw, d.vc) +
+      (n.p ? meterLow('Давление масла', e.p, 'бар', d.p.w, d.p.c) : '') +
+      (n.a ? meter('Ток', e.a, 'А', d.a.w, d.a.c) : '') +
+      '<div class="sp"><span>Т, 8 ч</span>' + spark(n.t, d.tw, col) + '<span>В, 8 ч</span>' + spark(n.v, d.vw, col) + '</div>' +
+      ((n.p || n.a) ? '<div class="sp">' + (n.p ? '<span>Р, 8 ч</span>' + spark(n.p, d.p.w, col) : '') + (n.a ? '<span>I, 8 ч</span>' + spark(n.a, d.a.w, col) : '') + '</div>' : '') +
+      (e.lvl ? '<div class="why">Отклонение: ' + esc(e.why.join('; ')) + '.<br><b>' + rec + '</b></div>' + prBox(pr) : '') +
+    '</div>';
+  }
+  function fmtDate(d) {
+    function z(x) { return (x < 10 ? '0' : '') + x; }
+    return z(d.getDate()) + '.' + z(d.getMonth() + 1) + '.' + d.getFullYear();
+  }
+  var TODAY = new Date(2026, 9, 12);
+  var POSTS = ['Пост 1 · ТО-2', 'Пост 2 · ТО-3', 'Пост 3 · ТР и внеплановый ремонт', 'Пост 4 · Диагностика и осмотр'];
+  var MASTERS = {
+    d1: ['Сейтжанов Бахытжан Омарович', 'Рогожин Виктор Петрович', 'Касымов Ермек Талгатович', 'Абенов Талгат Серикович'],
+    d2: ['Нурпеисов Марат Касымович', 'Гусев Алексей Борисович', 'Жунусов Едиге Ашимович', 'Темирбеков Арман Кайратович']
+  };
+  var RSTAT = { work: ['В работе', 'rs-work'], parts: ['Ожидает запчасти', 'rs-parts'], wait: ['Ожидает постановки', 'rs-wait'], plan: ['Запланирован', 'rs-plan'], done: ['Завершён', 'rs-done'] };
+  function parseD(txt) { var m = /(\d{2})\.(\d{2})\.(\d{4})/.exec(txt || ''); return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null; }
+  function postFor(work) {
+    if (/^(Внеплановый|ТР)/.test(work)) return 2;
+    if (/^Проверка/.test(work)) return 3;
+    if (/^ТО-3/.test(work)) return 1;
+    return 0;
+  }
+  function planItems(tl, u, l, dk) {
+    var items = [], d0 = parseD(u.next), num = parseInt(l.n.replace(/\D/g, ''), 10) || 0;
+    function add(it) { it.post = postFor(it.work); it.master = MASTERS[dk][it.post]; var mk0 = l.m.split(' ')[0]; it.kind = lkind(mk0); it.rdep = RDEP[mk0]; it.fitter = FITTERS[dk][(num + items.length * 2) % FITTERS[dk].length][0]; items.push(it); }
+    function planSt(dt) { return (dt - TODAY) / 864e5 <= 14 ? 'wait' : 'plan'; }
+    tl.nodes.forEach(function (n) {
+      var e = evalNode(n); if (!e.lvl) return;
+      var pr = prio(n, e, l);
+      if (e.lvl === 2) add({ sort: 100 - pr.score, when: 'Немедленно', work: 'Внеплановый осмотр и ремонт: ' + n.def.name, src: 'crit', pr: pr, status: l.s === 'repair' ? (num % 2 ? 'work' : 'parts') : 'wait' });
+      else add({ sort: 100 - pr.score, when: pr.cls < 3 ? pr.sla : (d0 ? 'до ' + fmtDate(d0) : 'до ближайшего ТО'), work: 'Проверка узла: ' + n.def.name, src: 'warn', pr: pr, status: pr.cls < 3 ? (num % 3 === 0 ? 'parts' : 'wait') : 'plan' });
+    });
+    if (d0) {
+      var d3 = new Date(d0), d12 = new Date(d0);
+      d3.setMonth(d3.getMonth() + 3); d12.setMonth(d12.getMonth() + 12);
+      add({ sort: 200, when: fmtDate(d0), work: u.next.split(' · ')[0] + ' (плановое)', src: 'plan', status: planSt(d0), date: d0 });
+      add({ sort: 201, when: fmtDate(d3), work: (u.next.indexOf('ТО-3') === 0 ? 'ТО-2' : 'ТО-3') + ' (плановое)', src: 'plan', status: planSt(d3), date: d3 });
+      add({ sort: 202, when: fmtDate(d12), work: 'ТР-1 (плановый ремонт)', src: 'plan', status: planSt(d12), date: d12 });
+    } else {
+      add({ sort: 200, when: u.next || 'по графику', work: 'Плановое обслуживание', src: 'plan', status: l.s === 'repair' ? 'wait' : 'plan' });
+    }
+    var ml = /^(.+?) · (\d{2}\.\d{2}\.\d{4})/.exec(u.last || ''), dl = ml ? parseD(ml[2]) : null;
+    if (dl && dl <= TODAY) add({ sort: 300, when: ml[2], work: ml[1] + ' (выполнено)', src: 'done', status: 'done', date: dl });
+    return items.sort(function (a, b) { return a.sort - b.sort; });
+  }
+  function orderRow(it, lbl, go) {
+    var st = RSTAT[it.status], tag = go ? 'button' : 'div';
+    return '<' + tag + ' class="row pl-' + it.src + '"' + (go ? ' data-go="' + go + '"' : '') + '><span>' + esc(it.work) +
+      '<small>' + (lbl ? esc(lbl) + ' · ' : '') + (it.src === 'done' ? 'Выполнено: ' : 'Срок: ') + esc(it.when) + '</small>' +
+      '<small>' + esc(POSTS[it.post]) + ' · мастер: ' + esc(shortFio(it.master)) + '</small>' +
+      '<small>Слесарь: ' + esc(shortFio(it.fitter)) + ' · ' + FIT_ST[it.status] + '</small>' +
+      '<small>' + esc(it.kind) + ' · ремонтное депо: ' + esc(it.rdep) + '</small>' +
+      (it.pr ? '<small>Приоритет ' + esc(it.pr.sum) + '</small>' : '') + '</span>' +
+      '<span class="rt col"><span class="badge ' + st[1] + '">' + st[0] + '</span>' + (it.pr ? prBadge(it.pr) : '') + '</span></' + tag + '>';
+  }
+
+  var HIST_RANGE = 30;
+  var HIST_END = new Date(2026, 9, 12);
+  var EXECS = ['Жаксылыков Н.Б.', 'Сергеев А.И.', 'Ташенов Р.К.', 'Мусаев Д.А.'];
+  var KINDS = [
+    ['Осмотр', 'Плановый осмотр узла, замечаний нет'],
+    ['Смазка', 'Замена смазки и фильтров'],
+    ['Ремонт', 'Ремонт узла, устранён повышенный нагрев'],
+    ['Замена', 'Замена изношенных деталей'],
+    ['Балансировка', 'Балансировка и центровка']
+  ];
+  function addHistory(tl, dk, i) {
+    var l = DEPOTS[dk].locos[i], digits = l.n.replace(/\D/g, ''), u = UNITS[digits] || {};
+    var rnd = mulberry32((parseInt(digits, 10) || 1) * 13 + (dk === 'd1' ? 3 : 4));
+    var from = Math.max(u.year || 2015, 2018);
+    tl.nodes.forEach(function (n) {
+      var d = n.def, L = n.t.length, lastT = n.t[L - 1], lastV = n.v[L - 1], lastP = n.p ? n.p[L - 1] : 0, lastA = n.a ? n.a[L - 1] : 0;
+      var ramp = (lastT >= d.tw * 0.9 || lastV >= d.vw * 0.9 || (n.p && lastP <= d.p.w * 1.15) || (n.a && lastA >= d.a.w * 0.9)) ? 14 : 0;
+      var T = [], V = [], PP = [], AA = [];
+      for (var j = 0; j < 90; j++) {
+        var t = n.baseT * 1.04 + (rnd() - 0.5) * 6, v = n.baseV * 1.05 + (rnd() - 0.5) * 0.5;
+        var p = n.p ? n.baseP * 0.99 + (rnd() - 0.5) * d.p.w * 0.08 : 0, a = n.a ? n.baseA * 1.03 + (rnd() - 0.5) * d.a.w * 0.05 : 0;
+        if (l.s === 'work' && rnd() < 0.03) { t += d.tw * 0.15; v += d.vw * 0.2; if (n.p) p -= d.p.w * 0.25; if (n.a) a += d.a.w * 0.4; }
+        if (ramp && j >= 90 - ramp) {
+          var f = (j - (90 - ramp) + 1) / ramp;
+          t = t * (1 - f) + lastT * f; v = v * (1 - f) + lastV * f;
+          if (n.p) p = p * (1 - f) + lastP * f;
+          if (n.a) a = a * (1 - f) + lastA * f;
+        }
+        T.push(Math.round(t)); V.push(r1(Math.max(0.1, v)));
+        if (n.p) PP.push(r2(Math.max(0.1, p)));
+        if (n.a) AA.push(Math.round(Math.max(1, a)));
+      }
+      T[89] = lastT; V[89] = lastV;
+      if (n.p) PP[89] = lastP;
+      if (n.a) AA[89] = lastA;
+      n.hT = T; n.hV = V;
+      if (n.p) n.hP = PP;
+      if (n.a) n.hA = AA;
+      var cnt = 4 + Math.floor(rnd() * 3), ev = [];
+      for (var c = 0; c < cnt; c++) {
+        var yy = from + Math.floor(rnd() * (2026 - from + 1));
+        var dt = new Date(yy, Math.floor(rnd() * 12), 1 + Math.floor(rnd() * 27));
+        if (dt > HIST_END) dt = new Date(2026, Math.floor(rnd() * 9), 1 + Math.floor(rnd() * 27));
+        var kd = KINDS[Math.floor(rnd() * KINDS.length)];
+        ev.push({ d: dt, kind: kd[0], text: kd[1], who: EXECS[Math.floor(rnd() * EXECS.length)] });
+      }
+      ev.sort(function (a, b) { return b.d - a.d; });
+      n.log = ev;
+    });
+  }
+  function dayDate(g) { return new Date(HIST_END.getTime() - (89 - g) * 86400000); }
+  function histNode(n) {
+    var d = n.def, R = HIST_RANGE, off = 90 - R, T = n.hT.slice(-R), V = n.hV.slice(-R);
+    var P = n.hP ? n.hP.slice(-R) : null, A = n.hA ? n.hA.slice(-R) : null, over = [], crit = false;
+    function avg(a) { return a.reduce(function (x, y) { return x + y; }, 0) / a.length; }
+    T.forEach(function (t, j) {
+      if (t >= d.tw || V[j] >= d.vw || (P && P[j] <= d.p.w) || (A && A[j] >= d.a.w)) over.push(off + j);
+      if (t >= d.tc || V[j] >= d.vc || (P && P[j] <= d.p.c) || (A && A[j] >= d.a.c)) crit = true;
+    });
+    var lvl = crit ? 2 : (over.length ? 1 : 0), col = LV_COLOR[lvl];
+    var recent = over.slice(-4).reverse().map(function (g) {
+      return '<div class="jr"><b>' + fmtDate(dayDate(g)) + ' · отклонение</b>температура ' + n.hT[g] + ' °C, вибрация ' + n.hV[g].toFixed(1) + ' мм/с' +
+        (n.hP ? ', давление масла ' + n.hP[g].toFixed(1) + ' бар' : '') + (n.hA ? ', ток ' + n.hA[g] + ' А' : '') + '</div>';
+    }).join('');
+    var log = n.log.map(function (e) {
+      return '<div class="jr"><b>' + fmtDate(e.d) + ' · ' + esc(e.kind) + '</b>' + esc(e.text) + '<br><span class="mut">Исполнитель: ' + esc(e.who) + '</span></div>';
+    }).join('');
+    return '<details class="hn"><summary><span>' + esc(d.name) + '</span><span class="badge dg-' + lvl + '">' + (over.length ? 'отклонений: ' + over.length : 'в норме') + '</span></summary><div class="hbody">' +
+      '<div class="hsp"><span>Температура, °C · за ' + R + ' дн.</span>' + spark(T, d.tw, col) + '</div>' +
+      '<div class="hsp"><span>Вибрация, мм/с · за ' + R + ' дн.</span>' + spark(V, d.vw, col) + '</div>' +
+      (P ? '<div class="hsp"><span>Давление масла, бар · за ' + R + ' дн.</span>' + spark(P, d.p.w, col) + '</div>' : '') +
+      (A ? '<div class="hsp"><span>Ток, А · за ' + R + ' дн.</span>' + spark(A, d.a.w, col) + '</div>' : '') +
+      '<div class="info" style="margin:12px 0">' +
+        '<div><span>Температура: макс / средняя</span><span>' + Math.max.apply(null, T) + ' / ' + Math.round(avg(T)) + ' °C</span></div>' +
+        '<div><span>Вибрация: макс / средняя</span><span>' + Math.max.apply(null, V).toFixed(1) + ' / ' + avg(V).toFixed(1) + ' мм/с</span></div>' +
+        (P ? '<div><span>Давление масла: мин / среднее</span><span>' + Math.min.apply(null, P).toFixed(1) + ' / ' + avg(P).toFixed(1) + ' бар</span></div>' : '') +
+        (A ? '<div><span>Ток: макс / средний</span><span>' + Math.max.apply(null, A) + ' / ' + Math.round(avg(A)) + ' А</span></div>' : '') +
+        '<div><span>Дней с отклонением</span><span>' + over.length + ' из ' + R + '</span></div></div>' +
+      (recent ? '<div class="sec2">Последние отклонения</div>' + recent : '') +
+      '<div class="sec2">Журнал узла (' + n.log.length + ')</div>' + log +
+    '</div></details>';
+  }
+
+  function locoView(route) {
+    var p = route.split(':'), dk = p[1], i = +p[2], tab = p[3] || 'pass';
+    var dep = DEPOTS[dk], l = dep.locos[i], mk = l.m.split(' ')[0], mo = MODELS[mk] || {}, u = UNITS[l.n.replace(/\D/g, '')] || {};
+    var tl = getTelem(dk, i), sm = summarize(tl), base = 'loco:' + dk + ':' + i + ':';
+    function kv(a, b) { return b ? '<div><span>' + a + '</span><span>' + esc(b) + '</span></div>' : ''; }
+    var tabs = [['pass', 'Паспорт'], ['mon', 'Мониторинг'], ['plan', 'План'], ['hist', 'История']].filter(function (t) { return ROLES[session].tabs.indexOf(t[0]) >= 0; });
+    if (tabs.every(function (t) { return t[0] !== tab; })) tab = tabs[0][0];
+    var tabsHtml = '<div class="seg4" style="grid-template-columns:repeat(' + tabs.length + ',1fr)">' + tabs.map(function (t) {
+      return '<button class="' + (tab === t[0] ? 'on' : '') + '" data-swap="' + base + t[0] + '">' + t[1] + '</button>';
+    }).join('') + '</div>';
+    var head = '<div class="row"><span>' + esc(l.m) + '<small>' + esc(l.n) + ' · ' + esc(dep.name) + ' · ' + esc(lkind(mk)) + '</small>' + '<small>Ремонтное депо: ' + esc(RDEP[mk] || '—') + '</small>' +
+      '<small>Диагностика: <span class="dg-' + sm.worst + '">' + sm.text + '</span></small></span>' +
+      '<span class="badge s-' + l.s + '">' + STATUS[l.s] + '</span></div>';
+    var body = '';
+    if (tab === 'pass') {
+      var digits = l.n.replace(/\D/g, '');
+      body = '<div class="sec">Цифровой паспорт</div><div class="info">' +
+        kv('Род тяги', lkind(mk)) + kv('Ремонтное депо', RDEP[mk]) + kv('Тип', mo.type) + kv('Модель', mk) + kv('Заводской номер', 'ЗН-' + (u.year || '') + '-' + digits) + kv('Номер в депо', l.n) + kv('Депо приписки', dep.name) +
+        kv('Год выпуска', u.year ? String(u.year) : '') + kv('Завод', mo.builder) + '</div>' +
+        '<div class="sec">Технические показатели</div><div class="info">' +
+        kv('Мощность', mo.power) + kv('Скорость', mo.speed) + kv('Масса', mo.weight) + kv('Пробег', u.km ? u.km + ' км' : '') +
+        kv('Последнее ТО', u.last) + kv('Следующее ТО', u.next) + '</div>' +
+        (mo.about ? '<div class="sec">О модели</div><div class="note">' + esc(mo.about) + '</div>' : '');
+    } else if (tab === 'mon') {
+      var list = [];
+      tl.nodes.forEach(function (n) { var e = evalNode(n); if (e.lvl) list.push({ n: n, e: e, pr: prio(n, e, l) }); });
+      list.sort(function (a, b) { return b.pr.score - a.pr.score; });
+      body = (can('act') ? '<div class="acts">' +
+        '<button data-act="refresh">Обновить показания</button>' +
+        '<button data-act="reset">Сбросить</button>' +
+        '<button class="warnb" data-act="sim">Смоделировать рост температуры, вибрации и тока, падение давления масла</button></div>' : '') +
+        '<div class="sec">Узлы · температура, вибрация, давление масла, ток</div>' + tl.nodes.map(function (n) { return nodeHtml(n, l); }).join('') +
+        '<div class="sec">Требуют ТО или ремонта · по приоритету</div>' +
+        (list.length ? list.map(function (x) {
+          return '<div class="row pl-' + (x.e.lvl === 2 ? 'crit' : 'warn') + '"><span>' + esc(x.n.def.name) + '<small>' + (x.e.lvl === 2 ? 'Ремонт: ' : 'Проверка: ') + esc(x.e.why.join('; ')) + '</small><small>' + esc(x.pr.sum) + '</small></span><span class="rt col">' + prBadge(x.pr) + diagBadge(x.e.lvl) + '</span></div>';
+        }).join('') : '<div class="note">Отклонений от нормы нет. Перечень пуст.</div>') +
+        '<div class="note" style="margin-top:12px;font-size:13px;color:var(--muted)">Пороги и показания условные, для демонстрации. Реальные значения задаются по нормативам и данным датчиков.</div>';
+    } else if (tab === 'plan') {
+      body = '<div class="sec">План ТО и ремонта · посты, мастера, статусы</div>' + planItems(tl, u, l, dk).map(function (it) { return orderRow(it, '', ''); }).join('');
+    } else {
+      var hist = (u.hist || []).map(function (h) {
+        return '<div class="ev"><b>' + esc(h[0]) + '</b><span>' + esc(h[1]) + '</span></div>';
+      }).join('');
+      body = '<div class="sec">База ремонтов</div><div class="info">' + kv('Последнее ТО', u.last) + kv('Следующее ТО', u.next) + kv('Пробег', u.km ? u.km + ' км' : '') + '</div>' +
+        '<div class="sec" style="margin-top:18px">История параметров и узлов</div>' +
+        '<div class="seg4" style="grid-template-columns:repeat(3,1fr)">' + [7, 30, 90].map(function (r) {
+          return '<button class="' + (HIST_RANGE === r ? 'on' : '') + '" data-act="range" data-v="' + r + '">' + r + ' дн.</button>';
+        }).join('') + '</div>' +
+        tl.nodes.map(histNode).join('') +
+        (hist ? '<div class="sec" style="margin-top:18px">Журнал ремонтов и событий</div><div class="tl">' + hist + '</div>' : '');
+    }
+    return { title: mk, html: '<div class="content">' + head + tabsHtml + body + '</div>' };
+  }
+
+  /* ---------- Страница: приоритеты диагностики ---------- */
+  function prioView() {
+    var all = [], cnt = { 1: 0, 2: 0, 3: 0 };
+    Object.keys(DEPOTS).forEach(function (dk) {
+      DEPOTS[dk].locos.forEach(function (l, i) {
+        getTelem(dk, i).nodes.forEach(function (n) {
+          var e = evalNode(n);
+          if (e.lvl) { var pr = prio(n, e, l); cnt[pr.cls]++; all.push({ dk: dk, i: i, l: l, n: n, e: e, pr: pr }); }
+        });
+      });
+    });
+    all.sort(function (a, b) { return b.pr.score - a.pr.score; });
+    var list = PRIO_F === '0' ? all : all.filter(function (x) { return String(x.pr.cls) === PRIO_F; });
+    var legend = [
+      [1, 'от 80 баллов', 'выводить из эксплуатации или устранять немедленно, до выхода в рейс'],
+      [2, '60–79 баллов', 'устранить в течение 24 часов'],
+      [3, 'до 59 баллов', 'проверить до ближайшего планового ТО']
+    ].map(function (x) {
+      return '<div class="row pl-' + (x[0] === 1 ? 'crit' : (x[0] === 2 ? 'warn' : 'plan')) + '"><span>P' + x[0] + ' · ' + PR_LBL[x[0]] + '<small>' + x[1] + ': ' + x[2] + '</small></span><span class="badge pr-' + x[0] + '">' + cnt[x[0]] + ' узл.</span></div>';
+    }).join('');
+    var filt = [['0', 'Все ' + all.length], ['1', 'P1 · ' + cnt[1]], ['2', 'P2 · ' + cnt[2]], ['3', 'P3 · ' + cnt[3]]].map(function (f) {
+      return '<button class="' + (PRIO_F === f[0] ? 'on' : '') + '" data-act="pf" data-v="' + f[0] + '">' + f[1] + '</button>';
+    }).join('');
+    var cards = list.length ? list.map(function (x) {
+      return '<button class="node" style="border-left-color:' + PR_COLOR[x.pr.cls] + '" data-go="loco:' + x.dk + ':' + x.i + ':mon">' +
+        '<div class="nh"><b>' + esc(x.l.m.split(' ')[0]) + ' ' + esc(x.l.n) + ' · ' + esc(DEPOTS[x.dk].name) + '</b><span class="rt">' + prBadge(x.pr) + '</span></div>' +
+        '<div class="mut" style="font-size:14px">' + esc(x.n.def.name) + ' · ' + x.pr.score + ' баллов · ' + STATUS[x.l.s].toLowerCase() + '</div>' +
+        '<div class="why"><b>Отклонение:</b> ' + esc(x.e.why.join('; ')) + '.</div>' + prBox(x.pr) + '</button>';
+    }).join('') : '<div class="note">В этой группе узлов нет</div>';
+    return { title: 'Приоритеты диагностики', html: '<div class="content">' +
+      '<div class="note"><b>Как считается приоритет.</b> Каждому узлу с отклонением начисляются баллы: уровень отклонения (критичный +60, предупредительный +30); по +6 за каждый параметр вне нормы или с опасным трендом (температура, вибрация, давление масла, ток); важность узла для безопасности движения (+5, +10 или +15); состояние локомотива (в работе +10, в резерве 0, в ремонте −5); прогноз достижения предела (+10 при ≤ 4 ч, +5 при ≤ 12 ч). Чем больше баллов, тем раньше узел нужно обслужить.</div>' +
+      '<div class="sec">Классы приоритета</div>' + legend +
+      '<div class="seg4">' + filt + '</div>' + cards + '</div>' };
+  }
+
+  /* ---------- Страница: план ремонта по постам ---------- */
+  function repairsView(route) {
+    var dk = route.split(':')[1] || 'd1', d = DEPOTS[dk], all = [], cnt = {};
+    d.locos.forEach(function (l, i) {
+      var u = UNITS[l.n.replace(/\D/g, '')] || {};
+      planItems(getTelem(dk, i), u, l, dk).forEach(function (it) {
+        var days = it.date ? (it.date - TODAY) / 864e5 : 0;
+        var ok = it.src === 'crit' || it.src === 'warn' ||
+          (it.src === 'plan' && it.date && days <= 60) ||
+          (it.src === 'plan' && !it.date && l.s === 'repair') ||
+          (it.src === 'done' && l.s !== 'repair' && -days <= 45);
+        if (ok && (RF === '0' || it.rdep === RF)) { it.loco = l; it.i = i; all.push(it); cnt[it.status] = (cnt[it.status] || 0) + 1; }
+      });
+    });
+    var posts = POSTS.map(function (pn, pi) {
+      var list = all.filter(function (it) { return it.post === pi; }).sort(function (a, b) { return a.sort - b.sort; });
+      var busy = list.some(function (it) { return it.status === 'work'; });
+      return '<div class="sec">' + esc(pn) + '</div>' +
+        '<div class="row"><span>Мастер поста: ' + esc(MASTERS[dk][pi]) + '<small>' + (busy ? 'Идёт ремонт' : 'Пост свободен') + ' · работ в списке: ' + list.length + '</small></span>' +
+        '<span class="badge ' + (busy ? 'rs-work' : 'rs-done') + '">' + (busy ? 'Занят' : 'Свободен') + '</span></div>' +
+        (list.length ? list.map(function (it) { return orderRow(it, it.loco.m.split(' ')[0] + ' ' + it.loco.n, 'loco:' + dk + ':' + it.i + ':plan'); }).join('') : '<div class="note">Работ нет</div>');
+    }).join('');
+    return { title: 'План ремонта', html: '<div class="content">' +
+      '<div class="seg" style="grid-template-columns:1fr 1fr">' + Object.keys(DEPOTS).map(function (k) {
+        return '<button class="' + (k === dk ? 'on' : '') + '" data-swap="repairs:' + k + '">' + esc(DEPOTS[k].name) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="seg4">' + [['0', 'Все депо'], ['Wabtec', 'Wabtec'], ['Alstom', 'Alstom'], ['Камкор', 'Камкор']].map(function (f) {
+        return '<button class="' + (RF === f[0] ? 'on' : '') + '" data-act="rf" data-v="' + f[0] + '">' + f[1] + '</button>';
+      }).join('') + '</div>' +
+      '<div class="cnts">' + Object.keys(RSTAT).map(function (k) { return '<span class="badge ' + RSTAT[k][1] + '">' + RSTAT[k][0] + ': ' + (cnt[k] || 0) + '</span>'; }).join('') + '</div>' +
+      posts + '</div>' };
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-act]');
+    if (!a) return;
+    var p = stack[stack.length - 1].split(':'), key = p[1] + ':' + p[2], act = a.getAttribute('data-act');
+    if (act === 'range') HIST_RANGE = +a.getAttribute('data-v');
+    else if (act === 'pf') PRIO_F = a.getAttribute('data-v');
+    else if (act === 'rf') RF = a.getAttribute('data-v');
+    else if (!can('act')) return;
+    else if (act === 'reset') delete TELEM[key];
+    else if (act === 'refresh') tickTelem(getTelem(p[1], +p[2]));
+    else if (act === 'sim') simTelem(getTelem(p[1], +p[2]));
+    var sc = document.querySelector('.content'), top = sc ? sc.scrollTop : 0;
+    render();
+    sc = document.querySelector('.content'); if (sc) sc.scrollTop = top;
+  });
+
+  
+/* ---------- Настройки ---------- */
+  var settings = { notif: true, sound: true, anim: true };
+  try {
+    var saved = JSON.parse(localStorage.getItem('depo-settings') || 'null');
+    if (saved) { for (var k in settings) { if (typeof saved[k] === 'boolean') settings[k] = saved[k]; } }
+  } catch (e) {}
+  function saveSettings() { try { localStorage.setItem('depo-settings', JSON.stringify(settings)); } catch (e) {} }
+  function applySettings() { document.body.classList.toggle('no-anim', !settings.anim); }
+  applySettings();
+
+  function toggleRow(key, title, hint) {
+    return '<button class="row" role="switch" data-tg="' + key + '" aria-checked="' + settings[key] + '"><span>' + title + '<small>' + hint + '</small></span><span class="sw"></span></button>';
+  }
+  function settingsHtml() {
+    return '<div class="content">' +
+      '<div class="sec">Основные</div>' +
+      toggleRow('notif', 'Уведомления', 'Сообщения о сменах и объявлениях') +
+      toggleRow('sound', 'Звук', 'Звуковые сигналы в приложении') +
+      toggleRow('anim', 'Анимация', 'Движение поезда на главном экране') +
+      '<div class="sec">Аккаунт</div>' +
+      '<div class="row"><span>Роль</span><span class="val">' + esc(ROLES[session].name) + '</span></div>' +
+      '<div class="row"><span>Сотрудник</span><span class="val">' + esc(shortFio(ROLES[session].person)) + '</span></div>' +
+      '<button class="row danger" data-logout="1"><span>Выйти</span></button>' +
+      '<div class="sec">Данные</div>' +
+      '<button class="row danger" data-clear="1"><span>Очистить чат с Иваном<small>Удалить историю переписки</small></span></button>' +
+      '<div class="sec">О приложении</div>' +
+      '<div class="row"><span>Версия</span><span class="val">1.2.0</span></div>' +
+      '<div class="row"><span>Обновлено</span><span class="val">12.10.2026</span></div>' +
+    '</div>';
+  }
+  document.addEventListener('click', function (e) {
+    var tg = e.target.closest('[data-tg]');
+    if (tg) {
+      var key = tg.getAttribute('data-tg');
+      settings[key] = !settings[key];
+      tg.setAttribute('aria-checked', settings[key]);
+      saveSettings(); applySettings();
+      return;
+    }
+    var cl = e.target.closest('[data-clear]');
+    if (cl) {
+      var hint = cl.querySelector('small');
+      if (cl.getAttribute('data-armed')) {
+        chatHistory = [];
+        cl.removeAttribute('data-armed');
+        hint.textContent = 'История очищена';
+      } else {
+        cl.setAttribute('data-armed', '1');
+        hint.textContent = 'Нажмите ещё раз для подтверждения';
+      }
+    }
+  });
+
+  /* ---------- Оболочка: меню, главная, поиск, поезд ---------- */
+  var appEl = document.getElementById('app'), sideEl = document.getElementById('side'), veilEl = document.getElementById('veil');
+  var HOME_TAB = 'ann', SQ = { q: '', dep: '', st: '', on: false };
+  var ROOT_MAP = { adm: 'adm', prio: 'prio', repairs: 'repairs', depots: 'depots', staff: 'staff', worker: 'staff', depot: 'depots', locos: 'depots', loco: 'depots', crew: 'depots', col: 'depots', brig: 'depots', 'class': 'depots', chat: 'chat', profile: 'profile', settings: 'settings' };
+  var ANN = [
+    ['12.10.2026', 'Плановая смена бригад в Депо 1 с 08:00'],
+    ['11.10.2026', 'Обновлён график ТО-2 для локомотивов KZ8A'],
+    ['09.10.2026', 'Инструктаж по безопасности движения для слесарей-ремонтников'],
+    ['07.10.2026', 'Проверка датчиков температуры и вибрации локомотивов'],
+    ['03.10.2026', 'Обновление системы мониторинга узлов']
+  ];
+  var NEWS = [
+    ['10.10.2026', 'В Депо 2 завершён ремонт тягового двигателя ТЭ33А'],
+    ['06.10.2026', 'Подготовлен план ТО-3 на четвёртый квартал'],
+    ['01.10.2026', 'Запущена цифровая система паспортов локомотивов']
+  ];
+  var ICONS = {
+    loco: '<rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 20l-2 2M16 20l2 2M7 17h.01M17 17h.01M9 7h6"/>',
+    alert: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',
+    gauge: '<path d="M4 18a8.5 8.5 0 1 1 16 0"/><path d="M12 18l4-6M12 6v2M5 11l1.5 1M19 11l-1.500 1"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.500 3.600-7 8-7s8 2.500 8 7"/>',
+    users: '<circle cx="9" cy="8" r="3.500"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6"/><circle cx="17.500" cy="9" r="2.500"/><path d="M17 14c3 0 5 1.500 5 4.500"/>'
+  };
+
+  /* ---------- Сцена: поезд, светофоры, контактная сеть ---------- */
+  function wheel(cx) { return '<circle cx="' + cx + '" cy="419" r="13" fill="#0e1116" stroke="#9aa5b4" stroke-width="2.5"/><circle cx="' + cx + '" cy="419" r="9.5" fill="#1b2129"/><g class="wh"><path d="M' + cx + ' 411.5v15M' + (cx - 7.5) + ' 419h15" stroke="#5d6877" stroke-width="2"/><circle cx="' + (cx - 5) + '" cy="414" r="1.6" fill="#07090c"/><circle cx="' + (cx + 5) + '" cy="424" r="1.6" fill="#07090c"/></g><path d="M' + (cx - 4) + ' 413l8-2-8-2 8-2-8-2" fill="none" stroke="#9aa5b4" stroke-width="1.5"/><rect x="' + (cx - 7) + '" y="413" width="14" height="12" rx="3" fill="#2b333e" stroke="#6b7684" stroke-width="1.2"/><circle cx="' + cx + '" cy="419" r="2" fill="#aab4c0"/>'; }
+  function bog(a, b) { var m = (a + b) / 2;
+    return '<rect x="' + (a - 20) + '" y="403" width="' + (b - a + 40) + '" height="9" rx="4" fill="#2a323d" stroke="#46525f" stroke-width="1.2"/>' +
+      '<rect x="' + (a - 9) + '" y="397" width="18" height="7" rx="1.5" fill="#566275"/><rect x="' + (b - 9) + '" y="397" width="18" height="7" rx="1.5" fill="#566275"/>' +
+      '<rect x="' + (m - 10) + '" y="395" width="20" height="10" rx="2" fill="#39414d" stroke="#6b7684" stroke-width="1"/><circle cx="' + m + '" cy="400" r="2.5" fill="#aab4c0"/>'; }
+  function car(x) {
+    var g = '<g transform="translate(' + x + ' 0)"><rect y="303" width="498" height="11" rx="3" fill="#2b4743"/><rect y="312" width="498" height="92" fill="url(#cg)"/><rect y="402" width="498" height="9" fill="#182022"/><rect x="40" y="366" width="428" height="5" fill="#c9b21f"/>' +
+      '<rect x="8" y="318" width="38" height="80" rx="3" fill="#0d4a3a" stroke="#0a3328"/><rect x="20" y="332" width="13" height="28" rx="2" fill="url(#wn)"/>';
+    for (var k = 0; k < 9; k++) g += '<rect x="' + (58 + k * 50.5) + '" y="334" width="29" height="28" rx="2" fill="url(#wn)" stroke="#0a2b22"/>';
+    g += '<circle cx="249" cy="383" r="6" fill="#2a86d6"/><path d="M244 381h10M244 385h10" stroke="#fff" stroke-width="1.4"/><text x="249" y="396" font-size="8" text-anchor="middle" fill="#cfe5df" font-family="Arial,sans-serif">КТЖ</text>' + bog(58, 126) + bog(372, 440);
+    [58, 126, 372, 440].forEach(function (c) { g += wheel(c); });
+    return g + '</g>';
+  }
+  function loco() {
+    return '<polygon points="1500,336 1660,298 1660,352" fill="url(#beam)" class="bm"/><polygon points="1508,370 1660,352 1660,400" fill="url(#beam)" class="bm"/>' +
+      '<path d="M1166 298L1193 252L1207 236M1177 298L1198 262" fill="none" stroke="#d2373d" stroke-width="3" stroke-linejoin="round"/><path d="M1196 236H1222M1405 296L1442 292" stroke="#d2373d" stroke-width="3"/>' +
+      '<rect x="1076" y="298" width="382" height="15" fill="#252d37"/><path d="M1090 294h60v5h-60zM1230 295h70v4h-70zM1330 294h80v5h-80z" fill="#37424f"/>' +
+      '<path d="M1033 394V350Q1036 334 1052 319L1064 311H1468Q1490 316 1500 336Q1510 352 1512 380V394Z" fill="url(#bl)"/>' +
+      '<polygon points="1152,316 1396,316 1370,383 1172,383" fill="url(#pn)"/>' +
+      '<polygon points="1138,316 1152,316 1172,383 1158,383" fill="#e8741c"/><polygon points="1396,316 1410,316 1384,383 1370,383" fill="#e8741c"/><rect x="1172" y="383" width="198" height="3" fill="#e8741c"/>' +
+      '<rect x="1064" y="391" width="424" height="13" fill="#39414d"/>' +
+      '<path d="M1041 338L1053 323V346H1041Z" fill="#0b1118"/><rect x="1056" y="322" width="36" height="24" rx="3" fill="url(#wn)" stroke="#0b1118" stroke-width="2"/>' +
+      '<rect x="1445" y="322" width="34" height="24" rx="3" fill="url(#wn)" stroke="#0b1118" stroke-width="2"/><path d="M1482 322L1494 338L1490 350H1482Z" fill="#0b1118"/>' +
+      '<text x="1055" y="366" font-size="9.5" fill="#fff" font-family="Arial,sans-serif">KZ4AT0060</text><text x="1433" y="368" font-size="9.5" fill="#fff" font-family="Arial,sans-serif">KZ4AT0060</text>' +
+      '<circle cx="1281" cy="346" r="15" fill="#1d6fd0"/><path d="M1268 341H1294M1267 346H1295M1268 351H1294" stroke="#fff" stroke-width="2"/><text x="1281" y="373" font-size="11" font-weight="700" text-anchor="middle" fill="#1a5fb0" font-family="Arial,sans-serif">КТЖ</text>' +
+      '<polygon points="1033,394 1052,394 1050,406 1033,406" fill="#e8741c"/><polygon points="1488,394 1512,394 1512,406 1490,406" fill="#e8741c"/>' +
+      '<circle cx="1507" cy="345" r="16" fill="#fff6c0" opacity=".3"/><circle cx="1507" cy="345" r="5" fill="#fffbe0"/><circle cx="1508" cy="372" r="4" fill="#fffbe0"/><circle cx="1038" cy="372" r="3" fill="#fff6c0"/>' +
+      bog(1100, 1190) + bog(1357, 1440) + [1100, 1190, 1357, 1440].map(wheel).join('');
+  }
+  var trEl = document.getElementById('train-host');
+  trEl.innerHTML = '<rect x="-4" y="306" width="24" height="98" fill="#0a0f0e"/><rect x="500" y="306" width="24" height="98" fill="#0a0f0e"/><rect x="996" y="396" width="40" height="8" fill="#10161b"/>' + car(-489) + car(15) + car(519) + loco();
+
+  var bgH = '<g class="dn night" fill="#cfd8e6"><circle cx="8" cy="132" r="2"/><circle cx="443" cy="104" r="1.5"/><circle cx="705" cy="92" r="1.5"/><circle cx="816" cy="131" r="1.5"/><circle cx="300" cy="150" r="1.2"/><circle cx="1000" cy="118" r="1.2"/><circle cx="1260" cy="140" r="1.2"/></g>';
+
+  bgH += '<g class="dn night"><circle cx="1300" cy="118" r="26" fill="#e9eef6"/><circle cx="1312" cy="110" r="22" fill="#05080c"/></g>' +
+    '<g class="dn sun"><circle cx="1300" cy="118" r="62" fill="#fff3b0" opacity=".22"/><circle cx="1300" cy="118" r="30" fill="#ffd84d"/></g>' +
+    '<g class="dn cloud" fill="#fff" fill-opacity=".88"><ellipse cx="300" cy="112" rx="62" ry="15"/><ellipse cx="338" cy="100" rx="38" ry="16"/><ellipse cx="270" cy="102" rx="34" ry="13"/>' +
+    '<ellipse cx="820" cy="96" rx="70" ry="16"/><ellipse cx="860" cy="84" rx="40" ry="15"/><ellipse cx="780" cy="86" rx="32" ry="12"/>' +
+    '<ellipse cx="1080" cy="140" rx="48" ry="12"/><ellipse cx="1108" cy="130" rx="28" ry="12"/></g>';
+  [[58, 145], [652, 153], [1136, 187], [1546, 192]].forEach(function (q) {
+    var x = q[0], y = q[1];
+    bgH += '<rect x="' + (x - 4) + '" y="' + y + '" width="8" height="' + (440 - y) + '" fill="#8d98a5"/><rect x="' + (x - 1) + '" y="' + y + '" width="2.5" height="' + (440 - y) + '" fill="#c8d0da"/><path d="M' + (x + 4) + ' ' + (y + 80) + 'L' + (x + 70) + ' ' + (y + 22) + '" stroke="#8d98a5" stroke-width="2.5"/>';
+  });
+  bgH += '<g fill="none" stroke="#8e9bab" stroke-width="1.6"><path d="M0 167Q300 160 650 158T1130 188T1600 200"/><path d="M0 222L1600 230"/><path d="M650 158L1546 197"/></g><g stroke="#8e9bab" stroke-width="1">';
+  [150, 277, 453, 560, 760, 908, 1050, 1230, 1330, 1450].forEach(function (x) { bgH += '<path d="M' + x + ' ' + (162 + x / 40) + 'V' + (222 + x / 200) + '"/>'; });
+  document.getElementById('bg').innerHTML = bgH + '</g>';
+
+  /* Светофоры: зелёный, пока поезд не доехал; красный после проезда; новый поезд снова открывает зелёный */
+  var SX = [855, 1566], sigEl = document.getElementById('sigs');
+  sigEl.innerHTML = SX.map(function (x) {
+    return '<g class="sg g" transform="translate(' + x + ' 0)"><rect x="-2.5" y="290" width="5" height="147" fill="#5a6573"/><rect x="-15" y="238" width="30" height="58" rx="8" fill="#05080c" stroke="#2c3541" stroke-width="1.5"/>' +
+      '<circle cy="257" r="7.5" fill="#2a1216"/><circle cy="279" r="7.5" fill="#0d2a1c"/>' +
+      '<g class="rl"><circle cy="257" r="22" fill="#ff3b4a" opacity=".22"/><circle cy="257" r="7.5" fill="#ff4d5e"/></g>' +
+      '<g class="gl"><circle cy="279" r="22" fill="#2fe58a" opacity=".22"/><circle cy="279" r="7.5" fill="#35f09a"/></g></g>';
+  }).join('');
+  var SGS = sigEl.children, RM = window.matchMedia('(prefers-reduced-motion: reduce)'), tx = 0, lastTs = 0, still = false, TX0 = -1530, TEND = 2100 + 3 * 240;
+  function setTrain(t, green) {
+    trEl.setAttribute('transform', 'translate(' + t.toFixed(1) + ' 0)');
+    trEl.style.setProperty('--rot', (t / 12 * 57.3).toFixed(1) + 'deg');
+    for (var i = 0; i < SGS.length; i++) {
+      var red = !green && 1512 + t > SX[i];
+      SGS[i].classList.toggle('r', red); SGS[i].classList.toggle('g', !red);
+    }
+  }
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    if (!settings.anim || RM.matches) { if (!still) { tx = 0; setTrain(0, true); still = true; } lastTs = 0; return; }
+    still = false;
+    if (!home.classList.contains('active')) { lastTs = 0; return; }
+    var dt = lastTs ? Math.min(ts - lastTs, 100) : 0; lastTs = ts;
+    tx += 240 * dt / 1000;
+    if (tx > TEND) tx = TX0;
+    setTrain(tx, false);
+  }
+  requestAnimationFrame(frame);
+
+  function upperName(full) { var q = full.split(' '); return q[0].toUpperCase() + ' ' + q[1][0] + '.' + q[2][0] + '.'; }
+  function closeDrawer() { sideEl.classList.remove('open'); veilEl.classList.remove('show'); }
+  function shellOn() {
+    appEl.hidden = false;
+    var ro = ROLES[session];
+    document.getElementById('u-name').textContent = shortFio(ro.person);
+    document.getElementById('u-role').textContent = ro.name;
+    var root = stack.length ? (ROOT_MAP[stack[0].split(':')[0]] || '') : '';
+    Array.prototype.forEach.call(document.querySelectorAll('.mi'), function (m) {
+      m.classList.toggle('on', (m.getAttribute('data-nav') || '') === root);
+      if ((m.getAttribute('data-nav') || '') === root && window.innerWidth > 960 && m.scrollIntoView) m.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+      var nd = m.getAttribute('data-need'); if (nd) m.hidden = ROLES[session].tabs.indexOf(nd) < 0;
+    });
+  }
+
+
+  function renderHome() {
+    document.getElementById('welcome').textContent = 'Добро пожаловать, ' + upperName(ROLES[session].person);
+    var diag = [], nLoco = 0, nNodes = 0, nDrv = 0, nBrig = 0;
+    Object.keys(DEPOTS).forEach(function (dk) {
+      nLoco += DEPOTS[dk].locos.length;
+      nBrig += (BRIGS[dk] || []).length;
+      (COLS[dk] || []).forEach(function (c) { nDrv += c.drivers.length; });
+      DEPOTS[dk].locos.forEach(function (l, i) {
+        var tl = getTelem(dk, i);
+        nNodes += tl.nodes.length;
+        tl.nodes.forEach(function (n) {
+          var e = evalNode(n);
+          if (e.lvl) diag.push({ dk: dk, i: i, l: l, n: n, lvl: e.lvl, pr: prio(n, e, l) });
+        });
+      });
+    });
+    diag.sort(function (a, b) { return b.pr.score - a.pr.score; });
+    var stats = [['loco', nLoco, 'локомотивов в двух депо'], ['alert', diag.length, 'узлов с отклонениями требуют проверки'], ['gauge', nNodes, 'узлов под мониторингом температуры, вибрации, давления масла и тока'], ['user', nDrv, 'машинистов в колоннах депо'], ['users', nBrig, 'локомотивных бригад']];
+    document.getElementById('stats').innerHTML = stats.map(function (x) {
+      return '<div class="stat"><div class="sh"><svg viewBox="0 0 24 24">' + ICONS[x[0]] + '</svg><b>' + x[1] + '</b></div><span>' + x[2] + '</span></div>';
+    }).join('');
+    var tabs = [['ann', 'Объявления'], ['diag', 'Диагностика' + (diag.length ? ' (' + diag.length + ')' : '')], ['news', 'Новости депо']];
+    document.getElementById('htabs').innerHTML = tabs.map(function (t) {
+      return '<button class="tab' + (HOME_TAB === t[0] ? ' on' : '') + '" data-htab="' + t[0] + '">' + t[1] + '</button>';
+    }).join('');
+    var today = fmtDate(new Date()), rows;
+    if (HOME_TAB === 'diag') {
+      rows = diag.length ? diag.map(function (x) {
+        return '<tr class="lnk" data-go="loco:' + x.dk + ':' + x.i + ':mon"><td>' + today + '</td><td>' +
+          esc(x.l.m.split(' ')[0]) + ' ' + esc(x.l.n) + ' · ' + esc(DEPOTS[x.dk].name) + ': ' + esc(x.n.def.name) + ' ' + prBadge(x.pr) + ' ' + diagBadge(x.lvl) +
+          '<br><span class="mut" style="font-size:13px">' + esc(x.pr.sum) + '</span></td></tr>';
+      }).join('') : '<tr><td>' + today + '</td><td>Отклонений не выявлено</td></tr>';
+    } else {
+      rows = (HOME_TAB === 'news' ? NEWS : ANN).map(function (r) { return '<tr><td>' + r[0] + '</td><td>' + esc(r[1]) + '</td></tr>'; }).join('');
+    }
+    document.getElementById('hrows').innerHTML = rows;
+  }
+  document.addEventListener('click', function (e) {
+    var nav = e.target.closest('[data-nav]');
+    if (nav) { var r = nav.getAttribute('data-nav'); stack = r ? [r] : []; render(); closeDrawer(); return; }
+    var ht = e.target.closest('[data-htab]');
+    if (ht) { HOME_TAB = ht.getAttribute('data-htab'); renderHome(); return; }
+    if (e.target.closest('#menu-btn')) { sideEl.classList.toggle('open'); veilEl.classList.toggle('show'); return; }
+    if (e.target.closest('#veil')) closeDrawer();
+  });
+
+  
+/* ---------- Доступ по ролям ---------- */
+  var ROLES = {
+    admin: { name: 'Администратор', pin: '1357', person: 'Айтжанов Бауыржан Серикович', tab: '000001', tabs: ['pass', 'mon', 'plan', 'hist', 'admin'], crew: true, act: true, admin: true },
+    master: { name: 'Мастер депо', pin: '4821', person: 'Касымов Ермек Талгатович', tab: '000412', tabs: ['pass', 'mon', 'plan', 'hist'], crew: true, act: true },
+    diag: { name: 'Диагност', pin: '3175', person: 'Ли Сергей Викторович', tab: '000528', tabs: ['pass', 'mon', 'hist'], crew: false, act: true },
+    plan: { name: 'Планировщик ремонта', pin: '6094', person: 'Омарова Айгерим Берикбаевна', tab: '000731', tabs: ['pass', 'mon', 'plan', 'hist'], crew: false, act: false },
+    mech: { name: 'Слесарь-ремонтник', pin: '2753', person: 'Жаксылыков Нурлан Бауыржанович', tab: '000946', tabs: ['pass', 'plan', 'hist'], crew: false, act: false }
+  };
+  var TAB_NAMES = { pass: 'Паспорт', mon: 'Мониторинг', plan: 'План ТО и ремонта', hist: 'История', admin: 'Администрирование' };
+  var session = null, pendingRole = null, fails = 0, lockUntil = 0;
+  try { var sr = sessionStorage.getItem('depo-role'); if (sr && ROLES[sr]) session = sr; } catch (e) {}
+  function can(x) { return !!(session && ROLES[session][x]); }
+  function hasTab(x) { return !!(session && ROLES[session].tabs.indexOf(x) >= 0); }
+
+  var loginEl = document.getElementById('login');
+  var rolesBox = document.getElementById('lg-roles'), pinBox = document.getElementById('lg-pin');
+  var pinInput = document.getElementById('lg-input'), pinErr = document.getElementById('lg-err'), pinRole = document.getElementById('lg-role');
+  function resetLogin() { pendingRole = null; rolesBox.hidden = false; pinBox.hidden = true; pinInput.value = ''; pinErr.textContent = ''; clearInterval(lockTimer); }
+  function showLogin() {
+    home.classList.remove('active'); page.classList.remove('active'); loginEl.classList.add('active');
+    appEl.hidden = true;
+    resetLogin();
+  }
+  rolesBox.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-role]');
+    if (!b) return;
+    pendingRole = b.getAttribute('data-role');
+    pinRole.textContent = ROLES[pendingRole].name;
+    rolesBox.hidden = true; pinBox.hidden = false; pinInput.value = ''; pinErr.textContent = ''; if (Date.now() < lockUntil) lockTick();
+    pinInput.focus();
+  });
+  document.getElementById('lg-back').addEventListener('click', resetLogin);
+  var lockTimer = null;
+  function lockTick() {
+    clearInterval(lockTimer);
+    function upd() {
+      var left = Math.ceil((lockUntil - Date.now()) / 1000);
+      if (left <= 0) { clearInterval(lockTimer); lockTimer = null; pinErr.textContent = ''; return false; }
+      pinErr.textContent = 'Слишком много попыток. Подождите ' + left + ' с.';
+      return true;
+    }
+    if (upd()) lockTimer = setInterval(upd, 250);
+  }
+  function tryLogin() {
+    var now = Date.now();
+    if (now < lockUntil) { lockTick(); return; }
+    if (pendingRole && pinInput.value === ROLES[pendingRole].pin) {
+      session = pendingRole; fails = 0;
+      try { sessionStorage.setItem('depo-role', session); } catch (e) {}
+      stack = []; render();
+    } else {
+      fails++; pinInput.value = '';
+      if (fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; lockTick(); }
+      else pinErr.textContent = 'Неверный код';
+    }
+  }
+  document.getElementById('lg-go').addEventListener('click', tryLogin);
+  pinInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') tryLogin(); });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-logout]')) {
+      session = null; stack = [];
+      try { sessionStorage.removeItem('depo-role'); } catch (er) {}
+      render();
+    }
+  });
+  function denied() { return { title: 'Нет доступа', html: '<div class="stub-body"><p>Недостаточно прав для этого раздела</p></div>' }; }
+
+  /* ---------- Администрирование ---------- */
+  var MODEL_LIST = ['ТЭ33А «Evolution»', 'KZ8A', 'KZ4AT', 'ВЛ80С', 'ТЭМ2'], CS = [['work', 'На смене'], ['rest', 'Отдых'], ['leave', 'Отпуск']];
+  function saveData() { try { localStorage.setItem('depo-data', JSON.stringify({ D: { d1: DEPOTS.d1.locos, d2: DEPOTS.d2.locos }, B: BRIGS, U: UNITS })); } catch (e) {} }
+  function normBrigs() {
+    Object.keys(BRIGS).forEach(function (dk) { BRIGS[dk].forEach(function (b) {
+      if (b.dT) return;
+      var m = null, h = null;
+      (COLS[dk] || []).forEach(function (c) { c.drivers.forEach(function (x) { if (x[0] === b.driver[0]) m = x; }); });
+      Object.keys(HELPERS).forEach(function (k) { HELPERS[k].forEach(function (x) { if (x[0] === b.helper) h = x; }); });
+      b.dT = m ? m[2] : '—'; b.hT = h ? h[1] : '—'; b.st = m ? m[3] : 'work';
+    }); });
+  }
+  (function () {
+    try { var d = JSON.parse(localStorage.getItem('depo-data') || 'null'); if (d && d.D && d.B && d.U) { DEPOTS.d1.locos = d.D.d1; DEPOTS.d2.locos = d.D.d2; BRIGS = d.B; UNITS = d.U; } } catch (e) {}
+    normBrigs();
+  })();
+  function inp(id, t, v, x) { return '<label class="fl">' + t + '<input id="' + id + '" value="' + esc(v) + '" ' + (x || '') + '></label>'; }
+  function sel(id, t, o, v) { return '<label class="fl">' + t + '<select id="' + id + '">' + o.map(function (a) { return '<option value="' + esc(a[0]) + '"' + (String(a[0]) === String(v) ? ' selected' : '') + '>' + esc(a[1]) + '</option>'; }).join('') + '</select></label>'; }
+  function admSeg(k, dk) { return '<div class="seg" style="grid-template-columns:1fr 1fr">' + Object.keys(DEPOTS).map(function (d) { return '<button class="' + (d === dk ? 'on' : '') + '" data-swap="adm:' + k + ':' + d + '">' + esc(DEPOTS[d].name) + '</button>'; }).join('') + '</div>'; }
+  function admView(route) {
+    var p = route.split(':'), k = p[1], dk = DEPOTS[p[2]] ? p[2] : 'd1', i = p[3], nw = i === 'new', h = '<div class="content">', t = 'Администрирование';
+    var btns = function (a, d) { return '<div class="perr" id="aerr"></div><button class="pbtn" data-adm="' + a + '" data-dk="' + dk + '" data-i="' + i + '">Сохранить</button>' + (nw ? '' : '<button class="row danger" data-adm="' + d + '" data-dk="' + dk + '" data-i="' + i + '"><span>Удалить</span></button>'); };
+    if (k === 'locos') {
+      t = 'Список локомотивов';
+      h += admSeg(k, dk) + DEPOTS[dk].locos.map(function (l, j) { return '<button class="row" data-go="adm:loco:' + dk + ':' + j + '"><span>' + esc(l.m) + '<small>' + esc(l.n) + '</small></span><span class="rt"><span class="badge s-' + l.s + '">' + STATUS[l.s] + '</span><span class="chev">›</span></span></button>'; }).join('') +
+        '<button class="pbtn" data-go="adm:loco:' + dk + ':new">+ Добавить локомотив</button>';
+    } else if (k === 'loco') {
+      var l = nw ? { m: MODEL_LIST[0], n: '', s: 'reserve' } : DEPOTS[dk].locos[+i];
+      if (!l) { return admView('adm'); }
+      var u = UNITS[l.n.replace(/\D/g, '')] || {};
+      t = nw ? 'Новый локомотив' : 'Локомотив ' + l.n;
+      h += '<div class="sec">' + esc(DEPOTS[dk].name) + '</div>' + sel('f-m', 'Модель', MODEL_LIST.map(function (m) { return [m, m]; }), l.m) + inp('f-n', 'Номер (цифры)', l.n.replace(/\D/g, ''), 'inputmode="numeric" maxlength="4"') +
+        sel('f-s', 'Состояние', Object.keys(STATUS).map(function (s) { return [s, STATUS[s]]; }), l.s) + inp('f-y', 'Год выпуска', u.year || '', 'inputmode="numeric" maxlength="4"') + inp('f-k', 'Пробег, км', u.km || '') + btns('sl', 'dl');
+    } else if (k === 'brigs') {
+      t = 'Локомотивные бригады';
+      h += admSeg(k, dk) + BRIGS[dk].map(function (b, j) { return '<button class="row" data-go="adm:brig:' + dk + ':' + j + '"><span>Бригада ' + (j + 1) + '<small>Машинист: ' + esc(shortFio(b.driver[0])) + ' · помощник: ' + esc(shortFio(b.helper)) + '</small></span><span class="rt"><span class="badge cls-' + b.driver[1] + '">' + b.driver[1] + ' класс</span><span class="chev">›</span></span></button>'; }).join('') +
+        '<button class="pbtn" data-go="adm:brig:' + dk + ':new">+ Добавить бригаду</button>';
+    } else if (k === 'brig') {
+      var b = nw ? { driver: ['', 1], helper: '', last: '', next: '', dT: '', hT: '', st: 'work' } : BRIGS[dk][+i];
+      if (!b) { return admView('adm'); }
+      t = nw ? 'Новая бригада' : 'Профиль бригады ' + (+i + 1);
+      h += '<div class="sec">' + esc(DEPOTS[dk].name) + ' · машинист</div>' + inp('b-dn', 'ФИО машиниста', b.driver[0]) + sel('b-dc', 'Класс', [[1, '1 класс'], [2, '2 класс'], [3, '3 класс']], b.driver[1]) + inp('b-dt', 'Стаж машиниста', b.dT) + sel('b-st', 'Статус', CS, b.st) +
+        '<div class="sec">Помощник</div>' + inp('b-hn', 'ФИО помощника', b.helper) + inp('b-ht', 'Стаж помощника', b.hT) +
+        '<div class="sec">Явки</div>' + inp('b-l', 'Последняя явка', b.last, 'placeholder="12.10.2026 06:00"') + inp('b-x', 'Следующая явка', b.next, 'placeholder="14.10.2026 14:00"') + btns('sb', 'db');
+    } else {
+      h += '<div class="sec">Редактирование данных</div>' +
+        '<button class="row" data-go="adm:locos:d1"><span>Список локомотивов<small>Добавить, изменить, удалить</small></span><span class="chev">›</span></button>' +
+        '<button class="row" data-go="adm:brigs:d1"><span>Локомотивные бригады и профили<small>Состав, класс, стаж, статус, явки</small></span><span class="chev">›</span></button>' +
+        '<div class="sec">Данные</div><button class="row danger" data-admreset="1"><span>Сбросить к исходным данным<small>Отменить все правки администратора</small></span></button>';
+    }
+    return { title: t, html: h + '</div>' };
+  }
+  document.addEventListener('click', function (e) {
+    if (!can('admin')) return;
+    var r = e.target.closest('[data-admreset]');
+    if (r) {
+      if (r.getAttribute('data-armed')) { try { localStorage.removeItem('depo-data'); } catch (x) {} location.reload(); }
+      else { r.setAttribute('data-armed', '1'); r.querySelector('small').textContent = 'Нажмите ещё раз для подтверждения'; }
+      return;
+    }
+    var a = e.target.closest('[data-adm]'); if (!a) return;
+    var op = a.getAttribute('data-adm'), dk = a.getAttribute('data-dk'), i = a.getAttribute('data-i'), er = document.getElementById('aerr');
+    function v(id) { return document.getElementById(id).value.replace(/\s+/g, ' ').trim(); }
+    function done() { Object.keys(TELEM).forEach(function (k) { if (k.indexOf(dk + ':') === 0) delete TELEM[k]; }); saveData(); stack.pop(); render(); }
+    if (op === 'dl' || op === 'db') {
+      if (!a.getAttribute('data-armed')) { a.setAttribute('data-armed', '1'); a.firstChild.textContent = 'Нажмите ещё раз для удаления'; return; }
+      (op === 'dl' ? DEPOTS[dk].locos : BRIGS[dk]).splice(+i, 1); done(); return;
+    }
+    if (op === 'sl') {
+      var dg = v('f-n').replace(/\D/g, '');
+      if (!dg) { er.textContent = 'Укажите номер локомотива цифрами'; return; }
+      dg = ('0000' + dg).slice(-4);
+      var dup = false;
+      Object.keys(DEPOTS).forEach(function (d) { DEPOTS[d].locos.forEach(function (l, j) { if (l.n.replace(/\D/g, '') === dg && !(d === dk && String(j) === i)) dup = true; }); });
+      if (dup) { er.textContent = 'Локомотив с таким номером уже есть'; return; }
+      var L = DEPOTS[dk].locos, rec = { m: v('f-m'), n: '№ ' + dg, s: v('f-s') };
+      if (i === 'new') L.push(rec);
+      else { var o = L[+i].n.replace(/\D/g, ''); if (o !== dg && UNITS[o]) { UNITS[dg] = UNITS[o]; delete UNITS[o]; } L[+i] = rec; }
+      var u = UNITS[dg] = UNITS[dg] || {}, y = parseInt(v('f-y'), 10), km = v('f-k');
+      if (y) u.year = y; if (km) u.km = km;
+      done(); return;
+    }
+    if (op === 'sb') {
+      var dn = v('b-dn'), hn = v('b-hn');
+      if (dn.split(' ').length < 3 || hn.split(' ').length < 3) { er.textContent = 'Укажите ФИО полностью: фамилия, имя, отчество'; return; }
+      var br = { driver: [dn, +v('b-dc')], helper: hn, last: v('b-l') || '—', next: v('b-x') || '—', dT: v('b-dt') || '—', hT: v('b-ht') || '—', st: v('b-st') };
+      if (i === 'new') BRIGS[dk].push(br); else BRIGS[dk][+i] = br;
+      done();
+    }
+  });
+
+  /* ================= Род тяги, ремонтные депо, персонал ================= */
+  var RDEP = { 'ТЭ33А': 'Wabtec', 'KZ8A': 'Alstom', 'KZ4AT': 'Alstom', 'ВЛ80С': 'Камкор', 'ТЭМ2': 'Камкор' };
+  var RF = '0';
+  function lkind(mk) { return ELECTRIC[mk] ? 'Электровоз' : (mk === 'ТЭМ2' ? 'Маневровый тепловоз' : 'Тепловоз'); }
+  var FIT_ST = { done: 'выполнил работу', work: 'в процессе', parts: 'ждёт запчасти', wait: 'назначен, готов к работе', plan: 'назначен по плану' };
+
+  var FITTERS = {
+    d1: [['Жаксылыков Нурлан Бауыржанович', '5 разряд', '12 лет'], ['Сергеев Алексей Иванович', '4 разряд', '8 лет'], ['Ташенов Руслан Кайратович', '4 разряд', '6 лет'],
+         ['Мусаев Данияр Асхатович', '3 разряд', '3 года'], ['Ибраев Серик Нурланович', '5 разряд', '15 лет'], ['Белов Максим Олегович', '3 разряд', '2 года']],
+    d2: [['Тулегенов Асылбек Маратович', '5 разряд', '14 лет'], ['Новиков Денис Сергеевич', '4 разряд', '9 лет'], ['Кенжебаев Ермек Талгатович', '4 разряд', '7 лет'],
+         ['Абдрахманов Тимур Аскарович', '3 разряд', '3 года'], ['Ли Виктор Александрович', '5 разряд', '11 лет'], ['Нурмагамбетов Айдар Серикович', '3 разряд', '2 года']]
+  };
+  var FIT_ST0 = { d1: ['work', 'work', 'work', 'rest', 'work', 'leave'], d2: ['work', 'work', 'rest', 'work', 'work', 'work'] };
+  var MEXP = { d1: ['21 год', '25 лет', '18 лет', '16 лет'], d2: ['19 лет', '23 года', '15 лет', '17 лет'] };
+  var MST0 = { d1: ['work', 'work', 'work', 'rest'], d2: ['work', 'rest', 'work', 'work'] };
+  var OFFICE = {
+    d1: [['Айтжанов Бауыржан Серикович', 'admin', '20 лет'], ['Ли Сергей Викторович', 'diag', '10 лет'], ['Омарова Айгерим Берикбаевна', 'plan', '7 лет']],
+    d2: [['Мухамедов Азамат Ержанович', 'diag', '8 лет'], ['Бектурганова Динара Маратовна', 'plan', '5 лет']]
+  };
+  var WROLE = { admin: 'Администратор', master: 'Мастер депо', fitter: 'Слесарь-ремонтник', diag: 'Диагност', plan: 'Планировщик ремонта', driver: 'Машинист', helper: 'Помощник машиниста', instr: 'Инструктор колонны' };
+  var WTYPES = [['all', 'Все'], ['master', 'Мастера'], ['fitter', 'Слесари'], ['driver', 'Машинисты'], ['helper', 'Помощники'], ['office', 'Управление']];
+  var DOW = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  var WORKERS = [], WBYNAME = {};
+
+  function addW(w) {
+    w.id = WORKERS.length;
+    var r = null; Object.keys(ROLES).forEach(function (k) { if (ROLES[k].person === w.name) r = ROLES[k]; });
+    w.tab = r ? r.tab : String(100200 + w.id * 37).slice(-6);
+    WORKERS.push(w); WBYNAME[w.name] = w;
+  }
+  (function () {
+    Object.keys(DEPOTS).forEach(function (dk) {
+      (OFFICE[dk] || []).forEach(function (o) { addW({ name: o[0], dk: dk, role: o[1], rank: '', exp: o[2], st: 'work', unit: 'Управление депо' }); });
+      MASTERS[dk].forEach(function (nm, pi) { addW({ name: nm, dk: dk, role: 'master', rank: 'мастер поста', exp: MEXP[dk][pi], st: MST0[dk][pi], post: pi, unit: POSTS[pi] }); });
+      FITTERS[dk].forEach(function (f, j) { addW({ name: f[0], dk: dk, role: 'fitter', rank: f[1], exp: f[2], st: FIT_ST0[dk][j], unit: 'Ремонтная бригада' }); });
+      COLS[dk].forEach(function (c, ci) {
+        addW({ name: c.head, dk: dk, role: 'instr', rank: 'инструктор', exp: '—', st: 'work', traffic: c.t, unit: c.n });
+        c.drivers.forEach(function (m) { addW({ name: m[0], dk: dk, role: 'driver', rank: m[1], exp: m[2], st: m[3], traffic: c.t, unit: c.n }); });
+        (HELPERS[dk + ':' + ci] || []).forEach(function (h, hi) {
+          var dr = c.drivers[hi];
+          addW({ name: h[0], dk: dk, role: 'helper', rank: 'помощник', exp: h[1], st: dr ? dr[3] : 'work', traffic: c.t, unit: c.n, mate: dr ? dr[0] : '' });
+        });
+      });
+    });
+  })();
+  function wid(name) { return WBYNAME[name] ? WBYNAME[name].id : 0; }
+  function wgroup(r) { return r === 'master' ? 'master' : r === 'fitter' ? 'fitter' : (r === 'driver' || r === 'instr') ? 'driver' : r === 'helper' ? 'helper' : 'office'; }
+
+  function depotRepairs(dk) {
+    var all = [];
+    DEPOTS[dk].locos.forEach(function (l, i) {
+      var u = UNITS[l.n.replace(/\D/g, '')] || {};
+      planItems(getTelem(dk, i), u, l, dk).forEach(function (it) {
+        var days = it.date ? (it.date - TODAY) / 864e5 : 0;
+        var ok = it.src === 'crit' || it.src === 'warn' || (it.src === 'plan' && it.date && days <= 60) ||
+          (it.src === 'plan' && !it.date && l.s === 'repair') || (it.src === 'done' && l.s !== 'repair' && -days <= 45);
+        if (ok) { it.loco = l; it.i = i; all.push(it); }
+      });
+    });
+    return all;
+  }
+  function curJobs(w, reps) {
+    reps = reps || depotRepairs(w.dk);
+    var ord = { work: 0, parts: 1, wait: 2, plan: 3, done: 4 };
+    return reps.filter(function (it) {
+      return (w.role === 'fitter' ? it.fitter === w.name : it.master === w.name);
+    }).sort(function (a, b) { return ord[a.status] - ord[b.status] || a.sort - b.sort; });
+  }
+  function locTag(l) { return l.m.split(' ')[0] + ' ' + l.n; }
+  (function () {
+    var nv = document.getElementById('side');
+    nv.addEventListener('wheel', function (e) {
+      if (window.innerWidth <= 960 || nv.scrollWidth <= nv.clientWidth) return;
+      nv.scrollLeft += (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY);
+      e.preventDefault();
+    }, { passive: false });
+  })();
+  function wInit(n) { return n.split(' ').slice(0, 2).map(function (x) { return x[0]; }).join(''); }
+  function z2(x) { return (x < 10 ? '0' : '') + x; }
+
+  /* История работы за 7 дней: сегодня (12.10.2026) и 6 предыдущих дней */
+  function weekLog(w, reps) {
+    var rnd = mulberry32(w.id * 97 + 11), L = DEPOTS[w.dk].locos;
+    var workL = L.filter(function (l) { return l.s === 'work'; }); if (!workL.length) workL = L;
+    var jobs = ((w.role === 'fitter' || w.role === 'master') ? curJobs(w, reps) : []).filter(function (it) { return it.status === 'work' || it.status === 'parts' || it.status === 'wait'; });
+    var office = (w.role === 'admin' || w.role === 'diag' || w.role === 'plan');
+    var days = [], hrs = 0, shifts = 0, ops = 0;
+    var MAC = ['Приёмка работ по наряду', 'Выдача наряд-допуска бригаде', 'Контроль качества ремонта', 'Разбор отклонений диагностики', 'Подписание акта выполненных работ'];
+    var IAC = ['Инструктаж колонны', 'Проверка знаний машинистов', 'Контрольная поездка с машинистом', 'Разбор безопасности движения'];
+    for (var k = 0; k < 7; k++) {
+      var dt = new Date(HIST_END.getTime() - k * 864e5), e = { date: dt, off: false, title: '', text: '', h: 0, n: 1 };
+      if (w.st === 'leave') { e.off = true; e.title = 'Отпуск'; e.text = 'Ежегодный оплачиваемый отпуск'; days.push(e); continue; }
+      var off = office ? (dt.getDay() === 0 || dt.getDay() === 6) : ((k + w.id) % 4 >= 2);
+      if (k === 0) off = (w.st === 'rest');
+      if (off) { e.off = true; e.title = office ? 'Выходной' : 'Выходной, отдых после смены'; days.push(e); continue; }
+      var night = !office && rnd() < 0.4;
+      e.shift = office ? '08:00–17:00' : (night ? 'ночная смена 20:00–08:00' : 'дневная смена 08:00–20:00');
+      e.h = office ? 8 : 12;
+      var l = workL[Math.floor(rnd() * workL.length)], mk = l.m.split(' ')[0], tag = locTag(l);
+      if (w.role === 'fitter') {
+        var nodes = ELECTRIC[mk] ? NODE_SETS.electric : NODE_SETS.diesel, nd = nodes[Math.floor(rnd() * nodes.length)].name, kd = KINDS[Math.floor(rnd() * KINDS.length)];
+        e.title = kd[0] + ' · ' + tag; e.text = nd + ': ' + kd[1].toLowerCase() + '.'; e.n = 2 + Math.floor(rnd() * 3);
+        if (k === 0 && jobs.length) { var j0 = jobs[0]; e.title = j0.work; e.text = locTag(j0.loco) + ' · ' + RSTAT[j0.status][0] + ' · ремонтное депо ' + j0.rdep; e.n = Math.max(e.n, jobs.length); }
+      } else if (w.role === 'master') {
+        e.title = MAC[Math.floor(rnd() * MAC.length)] + ' · ' + tag; e.text = POSTS[w.post] + ', слесарей в смене: ' + (3 + Math.floor(rnd() * 3)) + '.'; e.n = 3 + Math.floor(rnd() * 3);
+        if (k === 0 && jobs.length) { e.title = 'Контроль ремонта: ' + jobs[0].work; e.text = locTag(jobs[0].loco) + ' · слесарь ' + shortFio(jobs[0].fitter) + ' · ' + RSTAT[jobs[0].status][0] + '. Работ на посту в списке: ' + jobs.length + '.'; }
+      } else if (w.role === 'driver' || w.role === 'helper') {
+        var km = 180 + Math.floor(rnd() * 440), pre = w.role === 'helper' ? 'Помощник машиниста' + (w.mate ? ' · бригада с ' + shortFio(w.mate) : '') : '';
+        if (w.traffic === 'passenger') { e.title = (pre || 'Рейс') + ' · пассажирский состав'; e.text = tag + ' · ' + km + ' км, без опозданий.'; }
+        else if (w.traffic === 'freight') { e.title = (pre || 'Рейс') + ' · грузовой состав'; e.text = tag + ' · ' + km + ' км.'; }
+        else { e.title = (pre || 'Маневровая работа') + ' · станция'; e.text = tag + ' · маневровых передвижений: ' + (14 + Math.floor(rnd() * 20)) + '.'; }
+        e.n = 1 + Math.floor(rnd() * 2);
+      } else if (w.role === 'instr') {
+        e.title = IAC[Math.floor(rnd() * IAC.length)]; e.text = w.unit + ' · ' + tag + '.'; e.n = 1 + Math.floor(rnd() * 2);
+      } else if (w.role === 'diag') {
+        e.title = 'Диагностика · ' + tag; e.text = 'Проверка узлов: температура, вибрация, давление масла, ток.'; e.n = 3 + Math.floor(rnd() * 3);
+      } else if (w.role === 'plan') {
+        e.title = 'Планирование ремонта · ' + tag; e.text = 'Постановка работ на посты, согласование сроков и запчастей.'; e.n = 2 + Math.floor(rnd() * 3);
+      } else {
+        e.title = 'Администрирование данных депо'; e.text = 'Проверка списков локомотивов, бригад и прав доступа.'; e.n = 2;
+      }
+      hrs += e.h; shifts++; ops += e.n;
+      days.push(e);
+    }
+    return { days: days, hrs: hrs, shifts: shifts, ops: ops };
+  }
+  function opsLabel(r) { return r === 'fitter' ? 'Выполнено работ' : r === 'master' ? 'Принято и проверено работ' : (r === 'driver' || r === 'helper') ? 'Рейсов и маневровых работ' : 'Выполнено задач'; }
+
+  function wrow(w, sub2) {
+    var st = CREW_STATUS[w.st];
+    return '<button class="row" data-go="worker:' + w.id + '"><span>' + esc(w.name) + '<small>' + esc(WROLE[w.role]) + (w.rank && w.role !== 'instr' && w.role !== 'master' && w.role !== 'helper' ? ' · ' + esc(w.rank) : '') + (w.exp && w.exp !== '—' ? ' · стаж ' + esc(w.exp) : '') + '</small>' +
+      (sub2 ? '<small>' + sub2 + '</small>' : '') + '</span><span class="rt"><span class="badge ' + st[1] + '">' + st[0] + '</span><span class="chev">›</span></span></button>';
+  }
+  function staffView(route) {
+    var p = route.split(':'), dk = DEPOTS[p[1]] ? p[1] : 'd1', g = p[2] || 'all';
+    var all = WORKERS.filter(function (w) { return w.dk === dk; });
+    var reps = depotRepairs(dk);
+    var list = all.filter(function (w) { return g === 'all' || wgroup(w.role) === g; });
+    var depSeg = '<div class="seg" style="grid-template-columns:1fr 1fr">' + Object.keys(DEPOTS).map(function (k) {
+      return '<button class="' + (k === dk ? 'on' : '') + '" data-swap="staff:' + k + ':' + g + '">' + esc(DEPOTS[k].name) + '</button>';
+    }).join('') + '</div>';
+    var grpSeg = '<div class="seg4" style="grid-template-columns:repeat(3,1fr)">' + WTYPES.map(function (t) {
+      var c = all.filter(function (w) { return t[0] === 'all' || wgroup(w.role) === t[0]; }).length;
+      return '<button class="' + (g === t[0] ? 'on' : '') + '" data-swap="staff:' + dk + ':' + t[0] + '">' + t[1] + ' · ' + c + '</button>';
+    }).join('') + '</div>';
+    var rows = list.map(function (w) {
+      var s2 = '';
+      if (w.role === 'fitter' || w.role === 'master') {
+        var jb = curJobs(w, reps);
+        var act = jb.filter(function (it) { return it.status === 'work' || it.status === 'parts'; });
+        s2 = w.role === 'master' ? esc(w.unit) + ' · работ: ' + jb.length + ', в процессе: ' + act.length :
+          (jb.length ? (act.length ? 'Сейчас: ' : 'Назначен: ') + esc(jb[0].work) + ' · ' + esc(locTag(jb[0].loco)) + ' · ' + FIT_ST[jb[0].status] : 'Свободен, готов к наряду');
+      } else if (w.role === 'driver' || w.role === 'helper' || w.role === 'instr') { s2 = esc(w.unit) + ' · ' + TRAFFIC[w.traffic][0].toLowerCase() + ' движение'; }
+      else { s2 = esc(w.unit); }
+      return wrow(w, s2);
+    }).join('');
+    return { title: 'Персонал · ' + DEPOTS[dk].name, html: '<div class="content">' + depSeg + grpSeg + (rows || '<div class="note">В этой группе работников нет</div>') + '</div>' };
+  }
+  function workerView(route) {
+    var w = WORKERS[+route.split(':')[1]];
+    if (!w) return denied();
+    var reps = depotRepairs(w.dk), jobs = (w.role === 'fitter' || w.role === 'master') ? curJobs(w, reps) : [];
+    var wl = weekLog(w, reps), st = CREW_STATUS[w.st];
+    function kv(a, b) { return b ? '<div><span>' + a + '</span><span>' + esc(b) + '</span></div>' : ''; }
+    var h = '<div class="content"><div class="avatar">' + esc(wInit(w.name)) + '</div><div class="pname">' + esc(w.name) + '</div><div class="prole">' + esc(WROLE[w.role]) + ' · ' + esc(DEPOTS[w.dk].name) + '</div>' +
+      '<div class="sec">Рабочая карточка</div><div class="info">' +
+      kv('Табельный номер', w.tab) + kv('Должность', WROLE[w.role]) + kv('Депо', DEPOTS[w.dk].name) + kv('Подразделение', w.unit) +
+      kv(w.role === 'driver' ? 'Класс' : (w.role === 'fitter' ? 'Разряд' : 'Квалификация'), w.rank) + kv('Стаж', w.exp && w.exp !== '—' ? w.exp : '') +
+      (w.mate ? kv('Бригада с машинистом', w.mate) : '') +
+      '<div><span>Статус</span><span class="' + st[1] + '">' + st[0] + '</span></div></div>';
+    if (w.role === 'fitter' || w.role === 'master') {
+      h += '<div class="sec">' + (w.role === 'master' ? 'Ремонты на посту' : 'Назначенные ремонты') + ' · ' + jobs.length + (jobs.length > 8 ? ' (показано 8)' : '') + '</div>' +
+        (jobs.length ? jobs.slice(0, 8).map(function (it) {
+          var s = RSTAT[it.status];
+          return '<button class="row pl-' + it.src + '" data-go="loco:' + w.dk + ':' + it.i + ':plan"><span>' + esc(it.work) + '<small>' + esc(locTag(it.loco)) + ' · ' + esc(it.kind) + ' · ремонтное депо: ' + esc(it.rdep) + '</small>' +
+            '<small>Мастер: ' + esc(shortFio(it.master)) + ' · слесарь: ' + esc(shortFio(it.fitter)) + ' · ' + FIT_ST[it.status] + '</small></span><span class="rt col"><span class="badge ' + s[1] + '">' + s[0] + '</span><span class="chev">›</span></span></button>';
+        }).join('') : '<div class="note">Активных ремонтов сейчас нет</div>');
+    }
+    h += '<div class="sec">История работы за неделю · 06.10–12.10.2026</div><div class="info">' +
+      '<div><span>Смен отработано</span><span>' + wl.shifts + ' из 7 дней</span></div><div><span>Часов</span><span>' + wl.hrs + ' ч</span></div>' +
+      '<div><span>' + opsLabel(w.role) + '</span><span>' + wl.ops + '</span></div></div>' +
+      '<div class="tl" style="margin-top:18px">' + wl.days.map(function (e) {
+        var hd = z2(e.date.getDate()) + '.' + z2(e.date.getMonth() + 1) + ' (' + DOW[e.date.getDay()] + ')';
+        return '<div class="ev"><b>' + hd + (e.off ? ' · ' + esc(e.title) : ' · ' + esc(e.shift) + ' · ' + e.h + ' ч') + '</b>' +
+          (e.off ? (e.text ? '<span>' + esc(e.text) + '</span>' : '') : '<span><b style="display:inline;color:var(--text)">' + esc(e.title) + '</b><br>' + esc(e.text) + '</span>') + '</div>';
+      }).join('') + '</div></div>';
+    return { title: 'Карточка работника', html: h };
+  }
+
+  /* ================= День / ночь каждые 2 минуты ================= */
+  var DN_T0 = Date.now(), DN_MS = 120000, sceneEl = document.getElementById('scene'), dnLab = document.getElementById('dnlabel'), scSvg = document.getElementById('scene-svg');
+  function dnTick() {
+    var el = Date.now() - DN_T0, day = Math.floor(el / DN_MS) % 2 === 0, s = Math.ceil((DN_MS - el % DN_MS) / 1000);
+    sceneEl.classList.toggle('day', day);
+    scSvg.setAttribute('aria-label', 'Электровоз KZ4AT КТЖ с тремя пассажирскими вагонами ' + (day ? 'днём' : 'ночью'));
+    dnLab.textContent = day ? 'День' : 'Ночь';
+  }
+  dnTick(); setInterval(dnTick, 1000);
+
+  render();
+</script>
+</body>
+</html>
